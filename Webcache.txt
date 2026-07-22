@@ -1,0 +1,328 @@
+
+Engano de cache da Web
+
+Web cache deception é uma vulnerabilidade que permite que um invasor engane um cache da Web para armazenar conteúdo sensível e dinâmico. É causado por discrepâncias entre como o servidor de cache e o servidor de origem lidam com solicitações.
+
+Em um ataque de decepção de cache da web, um invasor convence uma vítima a visitar uma URL maliciosa, induzindo o navegador da vítima a fazer uma solicitação ambígua de conteúdo sensível. O cache interpreta isso como uma solicitação de um recurso estático e armazena a resposta. O invasor pode solicitar a mesma URL para acessar a resposta em cache, obtendo acesso não autorizado a informações privadas.
+Exemplo de decepção de cache da Web
+Nota
+
+É importante distinguir o engano do cache da web do envenenamento por cache da web. Embora ambos explorem mecanismos de cache, eles o fazem de maneiras diferentes:
+
+    O envenenamento por cache da Web manipula as chaves de cache para injetar conteúdo malicioso em uma resposta em cache, que é então servida a outros usuários.
+    Web cache deception explora regras de cache para enganar o cache para armazenar conteúdo sensível ou privado, que o invasor pode acessar.
+
+Para obter informações mais detalhadas sobre o envenenamento por cache da Web, consulte o nosso tópico da Web cache poisoning Academy.
+Pesquisa PortSwigger
+
+O PortSwigger desenvolveu vários laboratórios deliberadamente vulneráveis que você pode usar para praticar com segurança o que aprendeu contra alvos realistas. Muitos desses laboratórios são baseados em pesquisas originais apresentadas pela primeira vez na Black Hat USA 2024.
+
+Para mais detalhes, consulte o whitepaper que o acompanha: Gotta Cache 'em tudo: dobrando as regras de exploração de cache da web.
+Caches da Web
+
+Um cache da Web é um sistema que fica entre o servidor de origem e o usuário. Quando um cliente solicita um recurso estático, a solicitação é direcionada pela primeira vez para o cache. Se o cache não contiver uma cópia do recurso (conhecido como cache miss), a solicitação será encaminhada para o servidor de origem, que processa e responde à solicitação. A resposta é então enviada para o cache antes de ser enviada para o usuário. O cache usa um conjunto pré-configurado de regras para determinar se deve armazenar a resposta.
+
+Quando uma solicitação para o mesmo recurso estático é feita no futuro, o cache serve a cópia armazenada da resposta diretamente ao usuário (conhecido como um hit de cache).
+Decapação de cache de cache web deception
+
+O cache tornou-se um aspecto comum e crucial da entrega de conteúdo da Web, particularmente com o uso generalizado de Redes de Entrega de Conteúdo (CDNs), que usam cache para armazenar cópias de conteúdo em servidores distribuídos em todo o mundo. As CDNs aceleram a entrega veiculando conteúdo do servidor mais próximo do usuário, reduzindo os tempos de carregamento minimizando as viagens de dados de distância.
+Chaves de cache
+
+Quando o cache recebe uma solicitação HTTP, ele deve decidir se há uma resposta em cache que ele pode servir diretamente, ou se ele tem que encaminhar a solicitação para o servidor de origem. O cache toma essa decisão gerando uma "chave de cache" a partir de elementos da solicitação HTTP. Normalmente, isso inclui o caminho da URL e os parâmetros de consulta, mas também pode incluir uma variedade de outros elementos, como cabeçalhos e tipo de conteúdo.
+
+Se a chave de cache da solicitação de entrada corresponder à de uma solicitação anterior, o cache as considera equivalentes e serve uma cópia da resposta em cache.
+Nota
+
+Para saber como manipular chaves de cache para injetar conteúdo malicioso no cache, consulte nosso tópico Web cache poisoning Academy.
+Regras de cache
+
+As regras de cache determinam o que pode ser armazenado em cache e por quanto tempo. As regras de cache são frequentemente configuradas para armazenar recursos estáticos, que geralmente não mudam com frequência e são reutilizadas em várias páginas. O conteúdo dinâmico não é armazenado em cache, pois é mais provável que contenha informações confidenciais, garantindo que os usuários obtenham os dados mais recentes diretamente do servidor.
+
+Os ataques de decepção de cache da Web exploram como as regras de cache são aplicadas, por isso é importante saber sobre alguns tipos diferentes de regras, particularmente aquelas baseadas em strings definidas no caminho da URL da solicitação. Por exemplo:
+
+    Regras de extensão de arquivo estática - Essas regras correspondem à extensão do arquivo do recurso solicitado, por exemplo .csspara folhas de estilo ou .jspara arquivos JavaScript.
+    Regras de diretório estático - Essas regras correspondem a todos os caminhos de URL que começam com um prefixo específico. Estes são frequentemente usados para segmentar diretórios específicos que contêm apenas recursos estáticos, por exemplo /staticou /assets.
+    Regras de nome de arquivo - Essas regras correspondem a nomes de arquivos específicos para arquivos de destino que são universalmente necessários para operações da web e mudam raramente, como robots.txte favicon.ico.
+
+Os caches também podem implementar regras personalizadas com base em outros critérios, como parâmetros de URL ou análise dinâmica.
+Construindo um ataque de decepção de cache da web
+
+De um modo geral, a construção de um ataque básico de decepção de cache da web envolve as seguintes etapas:
+
+    Identifique um ponto de extremidade alvo que retorna uma resposta dinâmica contendo informações confidenciais. Revise as respostas no Burp, pois algumas informações confidenciais podem não estar visíveis na página renderizada. Foco em endpoints que suportam o GET, HEAD, ou OPTIONSmétodos como solicitações que alteram o estado do servidor de origem geralmente não são armazenados em cache.
+
+    Identifique uma discrepância na forma como o cache e o servidor de origem analisam o caminho da URL. Isso pode ser uma discrepância na forma como eles:
+        Mapear URLs para recursos.
+        Processar caracteres delimitadores.
+        Normalizar caminhos.
+    Crie um URL malicioso que use a discrepância para enganar o cache para armazenar uma resposta dinâmica. Quando a vítima acessa a URL, sua resposta é armazenada no cache. Usando o Burp, você pode enviar uma solicitação para a mesma URL para obter a resposta em cache contendo os dados da vítima. Evite fazer isso diretamente no navegador, pois alguns aplicativos redirecionam usuários sem uma sessão ou invalidam dados locais, o que poderia ocultar uma vulnerabilidade.
+
+Vamos explorar algumas abordagens diferentes para a construção de um ataque de decepção de cache da web.
+Usando um buster de cache
+
+Ao testar discrepâncias e criar um exploit de deception de cache da Web, certifique-se de que cada solicitação que você envia tenha uma chave de cache diferente. Caso contrário, você pode receber respostas em cache, o que afetará seus resultados de teste.
+
+Como tanto o caminho da URL quanto quaisquer parâmetros de consulta são normalmente incluídos na chave de cache, você pode alterar a chave adicionando uma string de consulta ao caminho e alterando-a cada vez que enviar uma solicitação. Automatize este processo usando a extensão Param Miner. Para fazer isso, depois de instalar a extensão, clique no menu Param miner > Configurações de nível superior e, em seguida, selecione Adicionar cachebuster dinâmico. Burp agora adiciona uma string de consulta exclusiva a cada solicitação que você faz. Você pode visualizar as strings de consulta adicionadas na guia Logger.
+Detectando respostas em cache
+
+Durante o teste, é crucial que você seja capaz de identificar respostas em cache. Para fazer isso, olhe para cabeçalhos de resposta e tempos de resposta.
+
+Vários cabeçalhos de resposta podem indicar que ele é armazenado em cache. Por exemplo:
+
+    O X-Cache cabeçalho fornece informações sobre se uma resposta foi servida a partir do cache. Os valores típicos incluem:
+        X-Cache: hit- A resposta foi servida a partir do cache.
+        X-Cache: miss- O cache não continha uma resposta para a chave da solicitação, por isso foi buscado do servidor de origem. Na maioria dos casos, a resposta é então armazenada em cache. Para confirmar isso, envie a solicitação novamente para ver se as atualizações de valor serão atingidas.
+        X-Cache: dynamic- O servidor de origem gerou dinamicamente o conteúdo. Geralmente, isso significa que a resposta não é adequada para o cache.
+        X-Cache: refresh- O conteúdo em cache estava desatualizado e precisava ser atualizado ou revalidado.
+    O Cache-Controlcabeçalho pode incluir uma diretiva que indica cache, como publiccom a max-agemaior do que 0. Observe que isso sugere apenas que o recurso é cacheable. Nem sempre é indicativo de cache, pois o cache às vezes pode substituir esse cabeçalho.
+
+Se você notar uma grande diferença no tempo de resposta para a mesma solicitação, isso também pode indicar que a resposta mais rápida é servida a partir do cache.
+Explorando regras de cache de extensão estática
+
+As regras de cache geralmente visam recursos estáticos, combinando extensões de arquivo comuns como .cssou .js. Este é o comportamento padrão na maioria dos CDNs.
+
+Se houver discrepâncias em como o cache e o servidor de origem mapeiam o caminho da URL para recursos ou usam delimitadores, um invasor poderá criar uma solicitação de um recurso dinâmico com uma extensão estática que é ignorada pelo servidor de origem, mas visualizada pelo cache.
+Discrepâncias de mapeamento de caminho
+
+O mapeamento de caminho de URL é o processo de associar caminhos de URL com recursos em um servidor, como arquivos, scripts ou execuções de comando. Há uma gama de diferentes estilos de mapeamento usados por diferentes frameworks e tecnologias. Dois estilos comuns são o mapeamento de URL tradicional e o mapeamento de URL RESTful.
+
+O mapeamento de URL tradicional representa um caminho direto para um recurso localizado no sistema de arquivos. Aqui está um exemplo típico:
+
+http://example.com/path/in/filesystem/resource.html
+
+    http://example.comaponta para o servidor.
+    /path/in/filesystem/representa o caminho do diretório no sistema de arquivos do servidor.
+    resource.htmlé o arquivo específico que está sendo acessado.
+
+Em contraste, os URLs no estilo REST não correspondem diretamente à estrutura física do arquivo. Eles abstraem caminhos de arquivo em partes lógicas da API:
+
+http://example.com/path/resource/param1/param2
+
+    http://example.comaponta para o servidor.
+    /path/resource/é um endpoint que representa um recurso.
+    param1e param2são parâmetros de caminho utilizados pelo servidor para processar a solicitação.
+
+As discrepâncias na forma como o cache e o servidor de origem mapeiam o caminho da URL para os recursos podem resultar em vulnerabilidades de engano do cache da Web. Considere o seguinte exemplo:
+
+http://example.com/user/123/profile/wcd.css
+
+    Um servidor de origem usando o mapeamento de URL no estilo REST pode interpretar isso como uma solicitação para o /user/123/profileendpoint e retorna as informações de perfil para o usuário 123, ignorando wcd.csscomo um parâmetro não significativo.
+    Um cache que usa o mapeamento de URL tradicional pode visualizar isso como uma solicitação de um arquivo nomeado wcd.csslocalizado no /profilediretório sob /user/123. Ele interpreta o caminho da URL como /user/123/profile/wcd.css. Se o cache estiver configurado para armazenar respostas para solicitações em que o caminho termina .css, ele iria cache e servir a informação do perfil como se fosse um arquivo CSS.
+
+Explorando discrepâncias de mapeamento de caminho
+
+Para testar como o servidor de origem mapeia o caminho da URL para os recursos, adicione um segmento de caminho arbitrário à URL do seu ponto de extremidade de destino. Se a resposta ainda contiver os mesmos dados confidenciais que a resposta base, isso indica que o servidor de origem abstrai o caminho da URL e ignora o segmento adicionado. Por exemplo, é o caso se modificar /api/orders/123para /api/orders/123/fooainda retorna informações de ordem.
+
+Para testar como o cache mapeia o caminho da URL para recursos, você precisará modificar o caminho para tentar corresponder a uma regra de cache adicionando uma extensão estática. Por exemplo, atualização /api/orders/123/foopara /api/orders/123/foo.js. Se a resposta for armazenada em cache, isso indica:
+
+    Que o cache interpreta o caminho completo da URL com a extensão estática.
+    Que há uma regra de cache para armazenar respostas para solicitações que terminam em .js.
+
+Os caches podem ter regras baseadas em extensões estáticas específicas. Experimente uma variedade de extensões, incluindo .css, .ico, e .exe.
+
+Em seguida, você pode criar uma URL que retorna uma resposta dinâmica armazenada no cache. Observe que esse ataque é limitado ao ponto de extremidade específico que você testou, pois o servidor de origem geralmente tem regras de abstração diferentes para diferentes pontos de extremidade.
+Nota
+
+O Burp Scanner detecta automaticamente vulnerabilidades de decepção de cache da Web que são causadas por discrepâncias de mapeamento de caminho durante as auditorias. Você também pode usar o Web Cache Deception Scanner BApp para detectar caches da Web mal configurados.
+LABORATÓ
+APRENDIZ
+Explorando o mapeamento de caminho para o engano do cache da Web
+Resolvido
+Discrepâncias delimitadoras
+
+Os delimitadores especificam limites entre diferentes elementos em URLs. O uso de caracteres e strings como delimitadores é geralmente padronizado. Por exemplo, ?é geralmente usado para separar o caminho da URL da string de consulta. No entanto, como o URI RFC é bastante permissivo, ainda ocorrem variações entre diferentes frameworks ou tecnologias.
+
+Discrepâncias na forma como o servidor de cache e origem usam caracteres e strings como delimitadores podem resultar em vulnerabilidades de decepção de cache da Web. Considere o exemplo /profile;foo.css:
+
+    O framework Java Spring utiliza o ;caráter para adicionar parâmetros conhecidos como variáveis matriciais. Um servidor de origem que usa Java Spring interpretaria, portanto, ;como delimitador. Trunca o caminho depois /profilee retorna informações de perfil.
+    A maioria dos outros frameworks não usa ;como delimitador. Portanto, um cache que não usa Java Spring provavelmente interpretará ;e tudo depois dele como parte do caminho. Se o cache tiver uma regra para armazenar respostas para solicitações que terminam em .css, ele pode armazenar em cache e servir as informações do perfil como se fosse um arquivo CSS.
+
+O mesmo é verdade para outros caracteres que são usados de forma inconsistente entre frameworks ou tecnologias. Considere essas solicitações para um servidor de origem que executa o framework Ruby on Rails, que usa .como delimitador para especificar o formato de resposta:
+
+    /profile- Esta solicitação é processada pelo formatador HTML padrão, que retorna as informações do perfil do usuário.
+    /profile.css- Esta solicitação é reconhecida como uma extensão CSS. Não há um formatador CSS, então a solicitação não é aceita e um erro é retornado.
+    /profile.ico- Este pedido utiliza o .icoextensão, que não é reconhecida pelo Ruby on Rails. O formatador HTML padrão lida com a solicitação e retorna as informações do perfil do usuário. Nessa situação, se o cache estiver configurado para armazenar respostas para solicitações que terminam em .ico, ele iria armazenar em cache e servir as informações do perfil como se fosse um arquivo estático.
+
+Personagens codificados também podem ser usados como delimitadores. Por exemplo, considere o pedido /profile%00foo.js:
+
+    O servidor OpenLiteSpeed usa o null codificado %00caráter como delimitador. Um servidor de origem que usa o OpenLiteSpeed interpretaria o caminho como /profile.
+    A maioria dos outros frameworks responde com um erro se %00está na URL. No entanto, se o cache usa Akamai ou Fastly, ele seria interpretado %00e tudo depois dele como o caminho.
+
+Explorando discrepâncias de delimitadores
+
+Você pode ser capaz de usar uma discrepância de delimitador para adicionar uma extensão estática ao caminho que é visualizado pelo cache, mas não pelo servidor de origem. Para fazer isso, você precisará identificar um caractere que é usado como um delimitador pelo servidor de origem, mas não pelo cache.
+
+Em primeiro lugar, encontre caracteres que são usados como delimitadores pelo servidor de origem. Inicie esse processo adicionando uma string arbitrária ao URL do seu ponto de extremidade de destino. Por exemplo, modificar /settings/users/listpara /settings/users/listaaa. Você usará essa resposta como referência quando começar a testar caracteres delimitadores.
+Nota
+
+Se a resposta for idêntica à resposta original, isso indica que a solicitação está sendo redirecionada. Você precisará escolher um ponto final diferente para testar.
+
+Em seguida, adicione um possível caractere delimitador entre o caminho original e a string arbitrária, por exemplo /settings/users/list;aaa:
+
+    Se a resposta for idêntica à resposta base, isso indica que o ;caráter é usado como um delimitador e o servidor de origem interpreta o caminho como /settings/users/list.
+    Se corresponder à resposta ao caminho com a string arbitrária, isso indica que o ;o caráter não é usado como um delimitador e o servidor de origem interpreta o caminho como /settings/users/list;aaa.
+
+Depois de identificar delimitadores que são usados pelo servidor de origem, teste se eles também são usados pelo cache. Para fazer isso, adicione uma extensão estática ao final do caminho. Se a resposta for armazenada em cache, isso indica:
+
+    Que o cache não usa o delimitador e interpreta o caminho completo da URL com a extensão estática.
+    Que há uma regra de cache para armazenar respostas para solicitações que terminam em .js.
+
+Certifique-se de testar todos os caracteres ASCII e uma variedade de extensões comuns, incluindo .css, .ico, e .exe. Fornecemos uma lista de potenciais personagens de delimitadores para você começar nos laboratórios, ver o Lista de delimitadores de laboratório de deception de cache da Web. Use o Burp Intruder para testar rapidamente esses personagens. Para evitar que o Burp Intruder codifique os caracteres do delimitador, desative a codificação de caracteres automatizada do Burp Intruder em Codificação de carga útil no painel lateral das cargas úteis.
+
+Você pode então construir uma exploração que aciona a regra de cache de extensão estática. Por exemplo, considere a carga útil /settings/users/list;aaa.js. O servidor de origem utiliza ;como delimitador:
+
+    O cache interpreta o caminho como: /settings/users/list;aaa.js
+    O servidor de origem interpreta o caminho como: /settings/users/list
+
+O servidor de origem retorna as informações de perfil dinâmico, que são armazenadas no cache.
+
+Como os delimitadores são geralmente usados de forma consistente em cada servidor, muitas vezes você pode usar esse ataque em muitos endpoints diferentes.
+Nota
+
+Alguns caracteres delimitadores podem ser processados pelo navegador da vítima antes de encaminhar a solicitação para o cache. Isso significa que alguns delimitadores não podem ser usados em um exploit. Por exemplo, os navegadores codificam caracteres como {, }, <, e >, e usar #para truncar o caminho.
+
+Se o cache ou o servidor de origem decodificar esses caracteres, talvez seja possível usar uma versão codificada em um exploit.
+LABORATÓ
+PRATICANTE
+Explorando delimitadores de caminho para decepção de cache da web
+Não resolvido
+Delimitador decodificação de discrepâncias
+
+Às vezes, os sites precisam enviar dados na URL que contém caracteres que têm um significado especial dentro de URLs, como delimitadores. Para garantir que esses caracteres sejam interpretados como dados, eles geralmente são codificados. No entanto, alguns analisadores decodificam certos caracteres antes de processar a URL. Se um caractere delimitador for decodificado, ele poderá ser tratado como um delimitador, truncando o caminho da URL.
+
+Diferenças em quais caracteres delimitadores são decodificados pelo servidor de cache e origem podem resultar em discrepâncias na forma como eles interpretam o caminho da URL, mesmo que ambos usem os mesmos caracteres que os delimitadores. Considere o exemplo /profile%23wcd.css, que utiliza o código de URL #caráter:
+
+    O servidor de origem decodifica %23para #. Utiliza #como delimitador, assim interpreta o caminho como /profilee retorna informações de perfil.
+    O cache também utiliza o #personagem como delimitador, mas não decodifica %23. interpreta o caminho como /profile%23wcd.css. Se houver uma regra de cache para o .cssextensão ele irá armazenar a resposta.
+
+Além disso, alguns servidores de cache podem decodificar a URL e, em seguida, encaminhar a solicitação com os caracteres decodificados. Outros primeiro aplicam regras de cache com base no URL codificado e, em seguida, decodifique a URL e a encaminhe para o próximo servidor. Esses comportamentos também podem resultar em discrepâncias na forma como o cache e o servidor de origem interpretam o caminho da URL. Considere o exemplo /myaccount%3fwcd.css:
+
+    O servidor de cache aplica as regras de cache com base no caminho codificado /myaccount%3fwcd.csse decide armazenar a resposta, pois há uma regra de cache para o .cssextensão. Em seguida, decodifica %3fpara ?e encaminha a solicitação reescrita para o servidor de origem.
+    O servidor de origem recebe o pedido /myaccount?wcd.css. Ele usa o ?personagem como delimitador, assim interpreta o caminho como /myaccount.
+
+Explorando discrepâncias de decodificação de delimitador
+
+Você pode ser capaz de explorar uma discrepância de decodificação usando um delimitador codificado para adicionar uma extensão estática ao caminho que é visualizado pelo cache, mas não pelo servidor de origem.
+
+Use a mesma metodologia de teste que você usou para identificar e explorar discrepâncias de delimitadores, mas use uma variedade de caracteres codificados. Certifique-se de que você também teste caracteres não imprimíveis codificados, particularmente %00, %0Ae %09. Se esses caracteres estiverem decodificados, eles também podem truncar o caminho da URL.
+Explorando regras de cache de diretório estático
+
+É prática comum que os servidores da Web armazenem recursos estáticos em diretórios específicos. As regras de cache geralmente visam esses diretórios, combinando prefixos de caminho de URL específicos, como /static, /assets, /scripts, ou /images. Essas regras também podem ser vulneráveis ao engano do cache da Web.
+Nota
+
+Para explorar regras de cache de diretório estático, você precisará entender o básico de ataques de travessia de caminho. Para mais informações, consulte o nosso tópico Path traversal Academy.
+Discrepâncias de normalização
+
+A normalização envolve a conversão de várias representações de caminhos de URL em um formato padronizado. Isso às vezes inclui a decodificação de caracteres codificados e a resolução de segmentos de pontos, mas isso varia significativamente de analisador para analisador.
+
+As discrepâncias na forma como o cache e o servidor de origem normalizam o URL podem permitir que um invasor construa uma carga útil de travessia de caminho que é interpretada de maneira diferente por cada analisador. Considere o exemplo /static/..%2fprofile:
+
+    Um servidor de origem que decodifica caracteres de corte e resolve segmentos de pontos normalizaria o caminho para /profilee retornar informações de perfil.
+    Um cache que não resolve segmentos de pontos ou decodificar slashes interpretaria o caminho como /static/..%2fprofile. Se o cache armazena respostas para solicitações com o /staticprefixo, ele iria armazenar em cache e servir a informação do perfil.
+
+Como mostrado no exemplo acima, cada segmento de ponto na sequência de travessia de caminho precisa ser codificado. Caso contrário, o navegador da vítima irá resolvê-lo antes de encaminhar a solicitação para o cache. Portanto, uma discrepância de normalização explorável requer que o cache ou o servidor de origem decodifique caracteres na sequência de travessia de caminho, bem como a resolução de segmentos de pontos.
+Detectando a normalização pelo servidor de origem
+
+Para testar como o servidor de origem normaliza o caminho da URL, envie uma solicitação para um recurso não-cacheable com uma sequência de travessia de caminho e um diretório arbitrário no início do caminho. Para escolher um recurso não-cacheable, procure um método não-idempotente como POST. Por exemplo, modificar /profilepara /aaa/..%2fprofile:
+
+    Se a resposta corresponder à resposta base e retornar as informações do perfil, isso indica que o caminho foi interpretado como /profile. O servidor de origem decodifica a barra e resolve o segmento de pontos.
+    Se a resposta não corresponder à resposta base, por exemplo, retornando a 404mensagem de erro, isso indica que o caminho foi interpretado como /aaa/..%2fprofile. O servidor de origem não decodifica a barra ou resolve o segmento de pontos.
+
+Nota
+
+Ao testar a normalização, comece codificando apenas a segunda barra no segmento de pontos. Isso é importante porque alguns CDNs correspondem à barra seguindo o prefixo de diretório estático.
+
+Você também pode tentar codificar a sequência de travessia de caminho completo ou codificar um ponto em vez do corte. Isso às vezes pode afetar se o analisador decodifica a sequência.
+Detectando a normalização pelo servidor de cache
+
+Você pode usar alguns métodos diferentes para testar como o cache normaliza o caminho. Comece identificando potenciais diretórios estáticos. Em Proxy > Histórico HTTP, procure solicitações com prefixos de diretório estático comuns e respostas em cache. Concentre-se em recursos estáticos definindo o filtro de histórico HTTP para mostrar apenas mensagens com respostas 2xx e script, imagens e tipos CSS MIME.
+
+Em seguida, você pode escolher uma solicitação com uma resposta em cache e reenviar a solicitação com uma sequência de travessia de caminho e um diretório arbitrário no início do caminho estático. Escolha uma solicitação com uma resposta que contenha evidências de ser armazenado em cache. Por exemplo, /aaa/..%2fassets/js/stockCheck.js:
+
+    Se a resposta não for mais armazenada em cache, isso indica que o cache não está normalizando o caminho antes de mapeá-lo para o ponto de extremidade. Isso mostra que há uma regra de cache baseada no /assetsprefixo.
+    Se a resposta ainda estiver em cache, isso pode indicar que o cache normalizou o caminho para /assets/js/stockCheck.js.
+
+Você também pode adicionar uma sequência de travessia de caminho após o prefixo do diretório. Por exemplo, modificar /assets/js/stockCheck.jspara /assets/..%2fjs/stockCheck.js:
+
+    Se a resposta não for mais armazenada em cache, isso indica que o cache decodifica a barra e resolve o segmento de pontos durante a normalização, interpretando o caminho como /js/stockCheck.js. Isso mostra que há uma regra de cache baseada no /assetsprefixo.
+    Se a resposta ainda estiver armazenada em cache, isso pode indicar que o cache não decodificou a barra ou resolveu o segmento de pontos, interpretando o caminho como /assets/..%2fjs/stockCheck.js.
+
+Observe que, em ambos os casos, a resposta pode ser armazenada em cache devido a outra regra de cache, como uma baseada na extensão do arquivo. Para confirmar que a regra de cache é baseada no diretório estático, substitua o caminho após o prefixo do diretório por uma cadeia arbitrária. Por exemplo, /assets/aaa. Se a resposta ainda estiver em cache, isso confirma que a regra do cache é baseada no /assetsprefixo. Observe que, se a resposta não parecer ser armazenada em cache, isso não descarta necessariamente uma regra de cache de diretório estático como às vezes 404respostas não são armazenadas em cache.
+Nota
+
+É possível que você não consiga determinar definitivamente se o cache decodifica segmentos de pontos e decodifica o caminho da URL sem tentar um exploit.
+Explorando a normalização pelo servidor de origem
+
+Se o servidor de origem resolver segmentos de ponto codificados, mas o cache não o fizer, você pode tentar explorar a discrepância construindo uma carga útil de acordo com a seguinte estrutura:
+/<static-directory-prefix>/..%2f<dynamic-path>
+
+Por exemplo, considere a carga útil /assets/..%2fprofile:
+
+    O cache interpreta o caminho como: /assets/..%2fprofile
+    O servidor de origem interpreta o caminho como: /profile
+
+O servidor de origem retorna as informações de perfil dinâmico, que são armazenadas no cache.
+LABORATÓ
+PRATICANTE
+Explorando a normalização do servidor de origem para o engano do cache da Web
+Não resolvido
+Explorando a normalização pelo servidor de cache
+
+Se o servidor de cache resolver segmentos de ponto codificados, mas o servidor de origem não, você pode tentar explorar a discrepância construindo uma carga útil de acordo com a seguinte estrutura:
+/<dynamic-path>%2f%2e%2e%2f<static-directory-prefix>
+Nota
+
+Ao explorar a normalização pelo servidor de cache, codifique todos os caracteres na sequência de travessia de caminho. O uso de caracteres codificados ajuda a evitar um comportamento inesperado ao usar delimitadores, e não há necessidade de ter uma barra não codificada seguindo o prefixo de diretório estático, pois o cache lidará com a decodificação.
+
+Nesta situação, a travessia do caminho por si só não é suficiente para uma exploração. Por exemplo, considere como o cache e o servidor de origem interpretam a carga útil /profile%2f%2e%2e%2fstatic:
+
+    O cache interpreta o caminho como: /static
+    O servidor de origem interpreta o caminho como: /profile%2f%2e%2e%2fstatic
+
+É provável que o servidor de origem retorne uma mensagem de erro em vez de informações de perfil.
+
+Para explorar essa discrepância, você também precisará identificar um delimitador usado pelo servidor de origem, mas não pelo cache. Teste possíveis delimitadores adicionando-os à carga útil após o caminho dinâmico:
+
+    Se o servidor de origem usar um delimitador, ele truncará o caminho da URL e retornará as informações dinâmicas.
+    Se o cache não usar o delimitador, ele resolverá o caminho e armazenará em cache a resposta.
+
+Por exemplo, considere a carga útil /profile;%2f%2e%2e%2fstatic. O servidor de origem utiliza ;como delimitador:
+
+    O cache interpreta o caminho como: /static
+    O servidor de origem interpreta o caminho como: /profile
+
+O servidor de origem retorna as informações de perfil dinâmico, que são armazenadas no cache. Você pode, portanto, usar essa carga útil para uma exploração.
+LABORATÓ
+PRATICANTE
+Explorando a normalização do servidor de cache para o engano do cache da Web
+Não resolvido
+Explorando regras de cache de nome de arquivo
+
+Certos arquivos, como robots.txt, index.html, e favicon.icosão arquivos comuns encontrados em servidores web. Eles são frequentemente armazenados em cache devido às suas alterações pouco frequentes. As regras de cache visam esses arquivos combinando a cadeia de caracteres exata do nome do arquivo.
+
+Para identificar se há uma regra de cache de nome de arquivo, envie um GETsolicitar um possível arquivo e ver se a resposta está em cache.
+Detectando discrepâncias de normalização
+
+Para testar como o servidor de origem normaliza o caminho da URL, use o mesmo método que você usou para regras de cache de diretório estático. Para obter mais informações, consulte Detecção de normalização pelo servidor de origem.
+
+Para testar como o cache normaliza o caminho da URL, envie uma solicitação com uma sequência de travessia de caminho e um diretório arbitrário antes do nome do arquivo. Por exemplo, /profile%2f%2e%2e%2findex.html:
+
+    Se a resposta for armazenada em cache, isso indica que o cache normaliza o caminho para /index.html.
+    Se a resposta não estiver armazenada em cache, isso indica que o cache não decodifica a barra e resolve o segmento de pontos, interpretando o caminho como /profile%2f%2e%2e%2findex.html.
+
+Explorando discrepâncias de normalização
+
+Como a resposta só é armazenada em cache se a solicitação corresponder ao nome exato do arquivo, você só pode explorar uma discrepância onde o servidor de cache resolve segmentos de ponto codificados, mas o servidor de origem não. Use o mesmo método que para regras de cache de diretório estático - basta substituir o prefixo de diretório estático pelo nome do arquivo. Para obter mais informações, consulte Explorando a normalização pelo servidor de cache.
+LABORATÓ
+ESPECIALISTA
+Explorando regras de cache de correspondência exata para engano de cache da Web
+Não resolvido
+Prevenção de vulnerabilidades de decepção de cache da Web
+
+Você pode tomar uma série de etapas para evitar vulnerabilidades de decepção de cache da Web:
+
+    Sempre usar Cache-Controlcabeçalhos para marcar recursos dinâmicos, definidos com as diretivas no-storee private.
+    Configure suas configurações de CDN para que suas regras de cache não sobreponham o Cache-Controlcabeçalho.
+    Ative qualquer proteção que sua CDN tenha contra ataques de engano de cache da web. Muitas CDNs permitem que você defina uma regra de cache que verifica se a resposta Content-Typecorresponde à extensão de arquivo URL da solicitação. Por exemplo, a Armadura de Decepção de Cache da Cloudflare.
+    Verifique se não há discrepâncias entre como o servidor de origem e o cache interpretam os caminhos da URL.
+
