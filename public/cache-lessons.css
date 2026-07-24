@@ -1,0 +1,5 @@
+.cache-signals { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:22px 0 }
+.cache-signals article { border:1px solid var(--line); background:rgba(140,255,193,.025); padding:16px }
+.cache-signals code { color:var(--green); font:600 11px 'IBM Plex Mono' }
+.cache-signals p { margin:8px 0 0; font-size:13px }
+@media(max-width:600px) { .cache-signals { grid-template-columns:1fr } }

@@ -1,0 +1,220 @@
+injeção NoSQL
+A injeção de NoSQL é uma vulnerabilidade em que um atacante consegue interferir nas consultas que um aplicativo faz a um banco de dados NoSQL. A injeção de NoSQL pode permitir que um atacante:
+
+Ignorar mecanismos de autenticação ou proteção.
+Extrair ou editar dados.
+Causar uma negação de serviço.
+Executar código no servidor.
+Os bancos de dados NoSQL armazenam e recuperam dados em um formato diferente das tabelas relacionais SQL tradicionais. Eles usam uma ampla variedade de linguagens de consulta em vez de um padrão universal como o SQL e têm menos restrições relacionais.
+
+Exemplo de injeção NoSQL
+Mais informações
+Para obter mais informações sobre bancos de dados NoSQL e como eles diferem dos bancos de dados SQL, consulte Bancos de dados NoSQL .
+
+Tipos de injeção NoSQL
+Existem dois tipos diferentes de injeção NoSQL:
+
+Injeção de sintaxe - Isso ocorre quando você consegue quebrar a sintaxe de consulta NoSQL, permitindo injetar seu próprio payload. A metodologia é semelhante à usada na injeção de SQL. No entanto, a natureza do ataque varia significativamente, pois os bancos de dados NoSQL usam uma variedade de linguagens de consulta, tipos de sintaxe de consulta e diferentes estruturas de dados.
+Injeção de operador - Isso ocorre quando você pode usar operadores de consulta NoSQL para manipular consultas.
+Neste tópico, veremos como testar vulnerabilidades em bancos de dados NoSQL em geral e, em seguida, nos concentraremos na exploração de vulnerabilidades no MongoDB, que é o banco de dados NoSQL mais popular. Também incluímos alguns laboratórios para que você possa praticar o que aprendeu.
+
+injeção de sintaxe NoSQL
+É possível detectar vulnerabilidades de injeção NoSQL tentando quebrar a sintaxe da consulta. Para isso, teste sistematicamente cada entrada enviando strings de teste e caracteres especiais que acionem um erro de banco de dados ou algum outro comportamento detectável caso não sejam adequadamente sanitizados ou filtrados pelo aplicativo.
+
+Se você conhece a linguagem da API do banco de dados de destino, use caracteres especiais e strings de ajuste (fuzz strings) relevantes para essa linguagem. Caso contrário, use uma variedade de strings de ajuste para atingir várias linguagens de API.
+
+Detecção de injeção de sintaxe no MongoDB
+Considere um aplicativo de compras que exibe produtos em diferentes categorias. Quando o usuário seleciona a categoria "Refrigerantes" , o navegador solicita a seguinte URL:
+
+https://insecure-website.com/product/lookup?category=fizzy
+Isso faz com que o aplicativo envie uma consulta JSON para recuperar os produtos relevantes da productcoleção no banco de dados MongoDB:
+
+this.category == 'fizzy'
+Para testar se a entrada pode ser vulnerável, envie uma string de teste (fuzzing) no valor do categoryparâmetro. Um exemplo de string para o MongoDB é:
+
+'"`{
+;$Foo}
+$Foo \xYZ
+Use essa string de fuzzing para construir o seguinte ataque:
+
+https://insecure-website.com/product/lookup?category='%22%60%7b%0d%0a%3b%24Foo%7d%0d%0a%24Foo%20%5cxYZ%00
+Se isso causar uma alteração na resposta original, pode indicar que a entrada do usuário não está sendo filtrada ou higienizada corretamente.
+
+Observação
+Vulnerabilidades de injeção NoSQL podem ocorrer em diversos contextos, e você precisa adaptar suas strings de fuzzing de acordo. Caso contrário, você pode simplesmente acionar erros de validação que impedirão a execução da sua consulta pela aplicação.
+
+Neste exemplo, estamos injetando a string de fuzzing via URL, portanto a string está codificada em URL. Em algumas aplicações, pode ser necessário injetar o payload por meio de uma propriedade JSON. Nesse caso, o payload seria '\"`{\r;$Foo}\n$Foo \\xYZ\u0000.
+
+Determinar quais caracteres são processados.
+Para determinar quais caracteres são interpretados como sintaxe pelo aplicativo, você pode injetar caracteres individuais. Por exemplo, você pode enviar ', o que resulta na seguinte consulta ao MongoDB:
+
+this.category == '''
+Se isso causar uma alteração na resposta original, pode indicar que o 'caractere quebrou a sintaxe da consulta e causou um erro de sintaxe. Você pode confirmar isso enviando uma string de consulta válida na entrada, por exemplo, escapando as aspas:
+
+this.category == '\''
+Se isso não causar um erro de sintaxe, pode significar que o aplicativo é vulnerável a um ataque de injeção.
+
+Confirmação do comportamento condicional
+Após detectar uma vulnerabilidade, o próximo passo é determinar se é possível influenciar condições booleanas usando a sintaxe NoSQL.
+
+Para testar isso, envie duas solicitações, uma com uma condição falsa e outra com uma condição verdadeira. Por exemplo, você pode usar as declarações condicionais ' && 0 && 'xda ' && 1 && 'xseguinte forma:
+
+https://insecure-website.com/product/lookup?category=fizzy'+%26%26+0+%26%26+'xhttps://insecure-website.com/product/lookup?category=fizzy'+%26%26+1+%26%26+'x
+Se o aplicativo se comportar de maneira diferente, isso sugere que a condição falsa afeta a lógica da consulta, mas a condição verdadeira não. Isso indica que a injeção desse tipo de sintaxe afeta uma consulta no servidor.
+
+Sobrepondo-se às condições existentes
+Agora que você identificou que pode influenciar condições booleanas, pode tentar sobrescrever as condições existentes para explorar a vulnerabilidade. Por exemplo, você pode injetar uma condição em JavaScript que sempre seja avaliada como verdadeira, como '||'1'=='1:
+
+https://insecure-website.com/product/lookup?category=fizzy%27%7c%7c%27%31%27%3d%3d%27%31
+Isso resulta na seguinte consulta ao MongoDB:
+
+this.category == 'fizzy'||'1'=='1'
+Como a condição inserida é sempre verdadeira, a consulta modificada retorna todos os itens. Isso permite visualizar todos os produtos em qualquer categoria, incluindo categorias ocultas ou desconhecidas.
+
+Aviso
+Tenha cuidado ao injetar uma condição que sempre retorna verdadeiro em uma consulta NoSQL. Embora isso possa ser inofensivo no contexto inicial da injeção, é comum que aplicativos usem dados de uma única solicitação em várias consultas diferentes. Se um aplicativo usar essa condição ao atualizar ou excluir dados, por exemplo, isso pode resultar em perda acidental de dados.
+
+LAB
+APRENDIZ
+Detecção de injeção NoSQL
+Você também pode adicionar um caractere nulo após o valor da categoria. O MongoDB pode ignorar todos os caracteres após um caractere nulo. Isso significa que quaisquer condições adicionais na consulta do MongoDB serão ignoradas. Por exemplo, a consulta pode ter uma this.releasedrestrição adicional:
+
+this.category == 'fizzy' && this.released == 1
+A restrição this.released == 1é usada para mostrar apenas os produtos que foram lançados. Para produtos não lançados, presume-se que this.released == 0...
+
+Nesse caso, um atacante poderia construir um ataque da seguinte forma:
+
+https://insecure-website.com/product/lookup?category=fizzy'%00
+Isso resulta na seguinte consulta NoSQL:
+
+this.category == 'fizzy'\u0000' && this.released == 1
+Se o MongoDB ignorar todos os caracteres após o caractere nulo, isso elimina a necessidade de o campo "released" ser definido como 1. Como resultado, todos os produtos da fizzycategoria serão exibidos, incluindo os produtos não lançados.
+
+Injeção de operador NoSQL
+Os bancos de dados NoSQL frequentemente utilizam operadores de consulta, que fornecem maneiras de especificar as condições que os dados devem atender para serem incluídos no resultado da consulta. Exemplos de operadores de consulta do MongoDB incluem:
+
+$where- Encontra documentos que correspondem a uma expressão JavaScript.
+$ne- Corresponde a todos os valores que não são iguais a um valor especificado.
+$in- Corresponde a todos os valores especificados em uma matriz.
+$regex- Seleciona documentos cujos valores correspondem a uma expressão regular especificada.
+Você pode conseguir injetar operadores de consulta para manipular consultas NoSQL. Para isso, envie sistematicamente diferentes operadores para uma variedade de entradas do usuário e, em seguida, revise as respostas em busca de mensagens de erro ou outras alterações.
+
+Submissão de operadores de consulta
+Em mensagens JSON, você pode inserir operadores de consulta como objetos aninhados. Por exemplo, {"username":"wiener"}torna-se {"username":{"$ne":"invalid"}}.
+
+Para entradas baseadas em URL, você pode inserir operadores de consulta por meio de parâmetros de URL. Por exemplo, username=wiener`{{ $ ...{ username[$ne]=invalid${{ ${{ ${{${{${{{${{{{{{{{{{{{{{{{{{{{{{{{{{{{{{
+
+Converter o método de solicitação de GETpara POST.
+Altere o Content-Typecabeçalho para application/json.
+Adicione JSON ao corpo da mensagem.
+Injetar operadores de consulta no JSON.
+Observação
+Você pode usar a extensão Content Type Converter para converter automaticamente o método de solicitação e alterar uma solicitação codificada em URL POSTpara JSON.
+
+Detecção de injeção de operador no MongoDB
+Considere uma aplicação vulnerável que aceita um nome de usuário e senha no corpo de uma POSTrequisição:
+
+{"username":"wiener","password":"peter"}
+Teste cada entrada com uma variedade de operadores. Por exemplo, para testar se a entrada de nome de usuário processa o operador de consulta, você pode tentar a seguinte injeção:
+
+{"username":{"$ne":"invalid"},"password":"peter"}
+Se o $neoperador for aplicado, isso consultará todos os usuários cujo nome de usuário não seja igual a invalid.
+
+Se o operador processar tanto o nome de usuário quanto a senha, poderá ser possível burlar a autenticação usando o seguinte código malicioso:
+
+{"username":{"$ne":"invalid"},"password":{"$ne":"invalid"}}
+Esta consulta retorna todas as credenciais de login em que o nome de usuário e a senha não são iguais a invalid. Como resultado, você está conectado ao aplicativo como o primeiro usuário da coleção.
+
+Para atacar uma conta, você pode criar um payload que inclua um nome de usuário conhecido ou um nome de usuário que você tenha adivinhado. Por exemplo:
+
+{"username":{"$in":["admin","administrator","superadmin"]},"password":{"$ne":""}}
+LAB
+APRENDIZ
+Explorando a injeção de operador NoSQL para burlar a autenticação.
+Explorando a injeção de sintaxe para extrair dados
+Em muitos bancos de dados NoSQL, alguns operadores ou funções de consulta podem executar código JavaScript limitado, como $whereo operador e mapReduce()a função do MongoDB. Isso significa que, se um aplicativo vulnerável usar esses operadores ou funções, o banco de dados poderá avaliar o JavaScript como parte da consulta. Portanto, você poderá usar funções JavaScript para extrair dados do banco de dados.
+
+Exfiltrando dados no MongoDB
+Considere um aplicativo vulnerável que permite aos usuários consultar outros nomes de usuário registrados e exibir suas funções. Isso aciona uma solicitação para a seguinte URL:
+
+https://insecure-website.com/user/lookup?username=admin
+Isso resulta na seguinte consulta NoSQL da userscoleção:
+
+{"$where":"this.username == 'admin'"}
+Como a consulta utiliza o $whereoperador, você pode tentar injetar funções JavaScript nessa consulta para que ela retorne dados confidenciais. Por exemplo, você poderia enviar a seguinte carga útil:
+
+admin' && this.password[0] == 'a' || 'a'=='b
+Isso retorna o primeiro caractere da senha do usuário, permitindo que você extraia a senha caractere por caractere.
+
+Você também pode usar a função JavaScript match()para extrair informações. Por exemplo, o seguinte código permite identificar se a senha contém dígitos:
+
+admin' && this.password.match(/\d/) || 'a'=='b
+LAB
+PRATICANTE
+Explorando injeção NoSQL para extrair dados
+Identificação dos nomes dos campos
+Como o MongoDB lida com dados semiestruturados que não exigem um esquema fixo, pode ser necessário identificar os campos válidos na coleção antes de extrair dados usando injeção de JavaScript.
+
+Por exemplo, para identificar se o banco de dados MongoDB contém um passwordcampo, você pode enviar a seguinte carga útil:
+
+https://insecure-website.com/user/lookup?username=admin'+%26%26+this.password!%3d'
+Envie a carga útil novamente para um campo existente e para um campo que não existe. Neste exemplo, você sabe que o usernamecampo existe, então você poderia enviar as seguintes cargas úteis:
+
+admin' && this.username!=' admin' && this.foo!='
+Se o passwordcampo existir, você esperaria que a resposta fosse idêntica à resposta para o campo existente ( username), mas diferente da resposta para o campo que não existe ( foo).
+
+Se você quiser testar diferentes nomes de campos, pode realizar um ataque de dicionário, usando uma lista de palavras para percorrer diferentes nomes de campos em potencial.
+
+Observação
+Você também pode usar a injeção de operadores NoSQL para extrair os nomes dos campos caractere por caractere. Isso permite identificar os nomes dos campos sem precisar adivinhar ou realizar um ataque de dicionário. Ensinaremos como fazer isso na próxima seção.
+
+Explorando a injeção de operadores NoSQL para extrair dados
+Mesmo que a consulta original não utilize nenhum operador que permita executar JavaScript arbitrário, você pode conseguir injetar um desses operadores por conta própria. Em seguida, você pode usar condições booleanas para determinar se o aplicativo executa qualquer JavaScript que você injetar por meio desse operador.
+
+Injetando operadores no MongoDB
+Considere uma aplicação vulnerável que aceita nome de usuário e senha no corpo de uma POSTrequisição:
+
+{"username":"wiener","password":"peter"}
+Para testar se é possível injetar operadores, você pode tentar adicionar o $whereoperador como um parâmetro adicional e, em seguida, enviar uma solicitação em que a condição seja avaliada como falsa e outra em que seja avaliada como verdadeira. Por exemplo:
+
+{"username":"wiener","password":"peter", "$where":"0"}{"username":"wiener","password":"peter", "$where":"1"}
+Se houver diferença entre as respostas, isso pode indicar que a expressão JavaScript na $wherecláusula está sendo avaliada.
+
+Extraindo nomes de campos
+Se você injetou um operador que permite executar JavaScript, poderá usar o keys()método para extrair o nome dos campos de dados. Por exemplo, você poderia enviar a seguinte carga útil:
+
+"$where":"Object.keys(this)[0].match('^.{0}a.*')"
+Esta função inspeciona o primeiro campo de dados no objeto do usuário e retorna o primeiro caractere do nome do campo. Isso permite extrair o nome do campo caractere por caractere.
+
+LAB
+PRATICANTE
+Explorando a injeção de operadores NoSQL para extrair campos desconhecidos.
+Exfiltração de dados usando operadores
+Alternativamente, você pode conseguir extrair dados usando operadores que não permitem a execução de JavaScript. Por exemplo, você pode usar o $regexoperador para extrair dados caractere por caractere.
+
+Considere uma aplicação vulnerável que aceita um nome de usuário e senha no corpo de uma POSTrequisição. Por exemplo:
+
+{"username":"myuser","password":"mypass"}
+Você pode começar testando se o $regexoperador é processado da seguinte forma:
+
+{"username":"admin","password":{"$regex":"^.*"}}
+Se a resposta a esta solicitação for diferente da que você recebe ao enviar uma senha incorreta, isso indica que o aplicativo pode ser vulnerável. Você pode usar o $regexoperador para extrair dados caractere por caractere. Por exemplo, a seguinte carga útil verifica se a senha começa com um " a:".
+
+{"username":"admin","password":{"$regex":"^a.*"}}
+injeção baseada no tempo
+Às vezes, acionar um erro de banco de dados não causa nenhuma diferença na resposta do aplicativo. Nessa situação, você ainda pode detectar e explorar a vulnerabilidade usando injeção de JavaScript para acionar um atraso condicional.
+
+Para realizar injeção NoSQL baseada em tempo:
+
+Carregue a página várias vezes para determinar um tempo de carregamento de referência.
+Insira uma carga útil baseada em temporização na entrada. Uma carga útil baseada em temporização causa um atraso intencional na resposta quando executada. Por exemplo, {"$where": "sleep(5000)"}causa um atraso intencional de 5000 ms em caso de injeção bem-sucedida.
+Verifique se a resposta carrega mais lentamente. Isso indica uma injeção bem-sucedida.
+As seguintes cargas úteis baseadas em temporização acionarão um atraso se a senha começar com a letra a:
+
+admin'+function(x){var waitTill = new Date(new Date().getTime() + 5000);while((x.password[0]==="a") && waitTill > new Date()){};}(this)+'admin'+function(x){if(x.password[0]==="a"){sleep(5000)};}(this)+'
+Prevenção de injeção de NoSQL
+A maneira adequada de prevenir ataques de injeção em NoSQL depende da tecnologia NoSQL específica em uso. Portanto, recomendamos a leitura da documentação de segurança do banco de dados NoSQL escolhido. Dito isso, as seguintes diretrizes gerais também serão úteis:
+
+Higienize e valide a entrada do usuário, utilizando uma lista de caracteres permitidos.
+Insira a entrada do usuário usando consultas parametrizadas em vez de concatenar a entrada do usuário diretamente na consulta.
+Para evitar injeção de código pelo operador, aplique uma lista de chaves permitidas.

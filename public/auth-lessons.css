@@ -1,0 +1,5 @@
+.auth-signals { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:22px 0 }
+.auth-signals article { border:1px solid var(--line); background:rgba(98,217,255,.035); padding:16px }
+.auth-signals code { color:var(--cyan); font:600 11px 'IBM Plex Mono' }
+.auth-signals p { margin:8px 0 0; font-size:13px }
+@media(max-width:600px) { .auth-signals { grid-template-columns:1fr } }

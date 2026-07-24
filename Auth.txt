@@ -1,0 +1,372 @@
+CONTEÚDO DE REFERÊNCIA — VULNERABILIDADES DE AUTENTICAÇÃO
+
+================================================================================
+01 — Fundamentos de autenticação
+================================================================================
+
+Vulnerabilidades de autenticação
+Conceitualmente, as vulnerabilidades de autenticação são fáceis de entender. No entanto, elas geralmente são críticas devido à clara relação entre autenticação e segurança.
+
+Vulnerabilidades de autenticação podem permitir que invasores acessem dados e funcionalidades sensíveis. Elas também expõem uma superfície de ataque adicional para explorações futuras. Por esse motivo, é importante aprender a identificar e explorar vulnerabilidades de autenticação, bem como a contornar medidas de proteção comuns.
+
+Nesta seção, explicamos:
+
+Os mecanismos de autenticação mais comuns usados ​​por sites.
+Possíveis vulnerabilidades nesses mecanismos.
+Vulnerabilidades inerentes em diferentes mecanismos de autenticação.
+Vulnerabilidades típicas introduzidas por sua implementação inadequada.
+Como você pode tornar seus próprios mecanismos de autenticação o mais robustos possível.
+Vulnerabilidades de autenticação: envenenamento de redefinição de senha
+Laboratórios
+Se você já conhece os conceitos básicos por trás das vulnerabilidades de autenticação e deseja praticar a exploração delas em alvos realistas e deliberadamente vulneráveis, pode acessar os laboratórios sobre este tópico no link abaixo.
+
+[Veja todos os laboratórios de autenticação](https://portswigger.net/web-security/all-labs#authentication)
+O que é autenticação?
+A autenticação é o processo de verificação da identidade de um usuário ou cliente. Os sites estão potencialmente expostos a qualquer pessoa conectada à internet. Isso torna os mecanismos de autenticação robustos essenciais para uma segurança web eficaz.
+
+Existem três tipos principais de autenticação:
+
+Algo que você sabe , como uma senha ou a resposta a uma pergunta de segurança. Esses são, às vezes, chamados de "fatores de conhecimento".
+Algo que você possui . Trata-se de um objeto físico, como um celular ou um token de segurança. Esses itens são às vezes chamados de "fatores de posse".
+Algo que você é ou faz. Por exemplo, seus dados biométricos ou padrões de comportamento. Esses são, às vezes, chamados de "fatores de inerência".
+Os mecanismos de autenticação dependem de uma variedade de tecnologias para verificar um ou mais desses fatores.
+
+Qual a diferença entre autenticação e autorização?
+A autenticação é o processo de verificar se um usuário é quem afirma ser. A autorização envolve verificar se um usuário tem permissão para fazer algo.
+
+Por exemplo, a autenticação determina se alguém que tenta acessar um site com o nome de usuário Carlos123é realmente a mesma pessoa que criou a conta.
+
+Uma vez Carlos123autenticado, suas permissões determinam o que ele está autorizado a fazer. Por exemplo, ele pode estar autorizado a acessar informações pessoais de outros usuários ou a realizar ações como excluir a conta de outro usuário.
+
+Como surgem as vulnerabilidades de autenticação?
+A maioria das vulnerabilidades em mecanismos de autenticação ocorre de uma das duas maneiras a seguir:
+
+Os mecanismos de autenticação são fracos porque não conseguem proteger adequadamente contra ataques de força bruta.
+Falhas lógicas ou código mal escrito na implementação permitem que os mecanismos de autenticação sejam completamente contornados por um atacante. Isso às vezes é chamado de "autenticação quebrada".
+Em muitas áreas do desenvolvimento web, falhas de lógica fazem com que o site se comporte de maneira inesperada, o que pode ou não representar um problema de segurança. No entanto, como a autenticação é crucial para a segurança, é muito provável que uma lógica de autenticação falha exponha o site a vulnerabilidades de segurança.
+
+Qual o impacto de uma autenticação vulnerável?
+O impacto das vulnerabilidades de autenticação pode ser grave. Se um atacante burlar a autenticação ou invadir a conta de outro usuário por força bruta, ele terá acesso a todos os dados e funcionalidades da conta comprometida. Se conseguir comprometer uma conta com altos privilégios, como a de um administrador de sistemas, poderá assumir o controle total de toda a aplicação e, potencialmente, obter acesso à infraestrutura interna.
+
+Mesmo comprometendo uma conta com privilégios baixos, um invasor ainda pode ter acesso a dados que, de outra forma, não deveria ter, como informações comerciais sensíveis. Mesmo que a conta não tenha acesso a dados sensíveis, ela ainda pode permitir que o invasor acesse páginas adicionais, o que amplia a superfície de ataque. Frequentemente, ataques de alta gravidade não são possíveis a partir de páginas publicamente acessíveis, mas podem ser possíveis a partir de uma página interna.
+
+Vulnerabilidades em mecanismos de autenticação
+O sistema de autenticação de um site geralmente consiste em vários mecanismos distintos onde podem ocorrer vulnerabilidades. Algumas vulnerabilidades são aplicáveis ​​a todos esses contextos. Outras são mais específicas da funcionalidade oferecida.
+
+Analisaremos mais detalhadamente algumas das vulnerabilidades mais comuns nas seguintes áreas:
+
+[Vulnerabilidades em sistemas de login baseados em senha](https://portswigger.net/web-security/authentication/password-based) LABS
+[Vulnerabilidades na autenticação multifator](https://portswigger.net/web-security/authentication/multi-factor) LABS
+[Vulnerabilidades em outros mecanismos de autenticação](https://portswigger.net/web-security/authentication/other-mechanisms) LABS
+Vários dos laboratórios exigem que você enumere nomes de usuário e tente quebrar senhas por força bruta. Para ajudar nesse processo, fornecemos uma lista resumida de [nomes de usuário](https://portswigger.net/web-security/authentication/auth-lab-usernames) e [senhas](https://portswigger.net/web-security/authentication/auth-lab-passwords) que você pode usar para resolver os laboratórios.
+
+Vulnerabilidades em mecanismos de autenticação de terceiros
+Se você gosta de explorar mecanismos de autenticação e já concluiu nosso teste de autenticação principal, talvez queira experimentar nossos laboratórios de autenticação OAuth.
+
+Leia mais
+[Autenticação OAuth](https://portswigger.net/web-security/oauth)
+
+Prevenindo ataques aos seus próprios mecanismos de autenticação
+Já demonstramos diversas maneiras pelas quais os sites podem ser vulneráveis ​​devido à forma como implementam a autenticação. Para reduzir o risco de tais ataques em seus próprios sites, existem alguns princípios que você deve sempre tentar seguir.
+
+================================================================================
+02 — Logins baseados em senha
+================================================================================
+
+Vulnerabilidades em logins baseados em senha
+Em sites que adotam um processo de login baseado em senha, os usuários se cadastram para obter uma conta ou recebem uma conta de um administrador. Essa conta é associada a um nome de usuário exclusivo e uma senha secreta, que o usuário insere em um formulário de login para se autenticar.
+
+Nesse cenário, o fato de conhecerem a senha secreta é considerado prova suficiente da identidade do usuário. Isso significa que a segurança do site fica comprometida se um invasor conseguir obter ou adivinhar as credenciais de login de outro usuário.
+
+Isso pode ser alcançado de diversas maneiras. As seções a seguir mostram como um invasor pode usar ataques de força bruta e algumas das falhas na proteção contra esses ataques. Você também aprenderá sobre as vulnerabilidades na autenticação básica HTTP.
+
+Ataques de força bruta
+Um ataque de força bruta ocorre quando um invasor usa um sistema de tentativa e erro para adivinhar credenciais de usuário válidas. Esses ataques são normalmente automatizados usando listas de palavras com nomes de usuário e senhas. A automatização desse processo, especialmente com o uso de ferramentas específicas, permite que um invasor faça um grande número de tentativas de login em alta velocidade.
+
+Ataques de força bruta não se resumem a tentativas aleatórias de nomes de usuário e senhas. Ao utilizar lógica básica ou conhecimento disponível publicamente, os atacantes podem refinar seus ataques de força bruta para obter resultados muito mais precisos. Isso aumenta consideravelmente a eficiência desses ataques. Sites que dependem exclusivamente de logins com senha para autenticar usuários podem ser extremamente vulneráveis ​​se não implementarem proteção adequada contra ataques de força bruta.
+
+Força bruta para descobrir nomes de usuário
+Os nomes de usuário são especialmente fáceis de adivinhar se seguirem um padrão reconhecível, como um endereço de e-mail. Por exemplo, é muito comum ver logins corporativos no formato `@username` firstname.lastname@somecompany.com. No entanto, mesmo que não haja um padrão óbvio, às vezes até contas com altos privilégios são criadas usando nomes de usuário previsíveis, como `@username` ou ` admin@username` administrator.
+
+Durante a auditoria, verifique se o site divulga publicamente possíveis nomes de usuário. Por exemplo, é possível acessar perfis de usuários sem fazer login? Mesmo que o conteúdo dos perfis esteja oculto, o nome usado no perfil às vezes é o mesmo que o nome de usuário de login. Você também deve verificar as respostas HTTP para ver se algum endereço de e-mail é divulgado. Ocasionalmente, as respostas contêm endereços de e-mail de usuários com altos privilégios, como administradores ou suporte de TI.
+
+Força bruta em senhas
+As senhas também podem ser quebradas por força bruta, com a dificuldade variando de acordo com a força da senha. Muitos sites adotam algum tipo de política de senhas, que força os usuários a criar senhas de alta entropia que são, pelo menos teoricamente, mais difíceis de quebrar apenas por força bruta. Isso normalmente envolve a imposição de senhas com:
+
+Número mínimo de caracteres
+Uma mistura de letras maiúsculas e minúsculas.
+Pelo menos um caractere especial
+No entanto, embora senhas de alta entropia sejam difíceis de serem quebradas apenas por computadores, podemos usar um conhecimento básico do comportamento humano para explorar as vulnerabilidades que os usuários introduzem inadvertidamente nesse sistema. Em vez de criar uma senha forte com uma combinação aleatória de caracteres, os usuários frequentemente escolhem uma senha que conseguem se lembrar e tentam forçá-la a se adequar à política de senhas. Por exemplo, se `password` mypasswordnão for permitido, os usuários podem tentar algo como ` Mypassword1!password` ou `password` Myp4$$w0rdem vez disso.
+
+Nos casos em que a política exige que os usuários alterem suas senhas regularmente, também é comum que eles façam apenas pequenas alterações previsíveis em suas senhas preferidas. Por exemplo, `password` Mypassword1!se torna Mypassword1?`password` ou `password` .Mypassword2!.
+
+Esse conhecimento das credenciais prováveis ​​e dos padrões previsíveis significa que os ataques de força bruta podem ser muito mais sofisticados e, portanto, mais eficazes do que simplesmente testar todas as combinações possíveis de caracteres.
+
+Enumeração de nomes de usuário
+A enumeração de nomes de usuário ocorre quando um invasor consegue observar mudanças no comportamento do site para identificar se um determinado nome de usuário é válido.
+
+A enumeração de nomes de usuário geralmente ocorre na página de login, por exemplo, quando você insere um nome de usuário válido, mas uma senha incorreta, ou em formulários de cadastro, quando você insere um nome de usuário que já está em uso. Isso reduz significativamente o tempo e o esforço necessários para realizar um ataque de força bruta, pois o invasor consegue gerar rapidamente uma lista reduzida de nomes de usuário válidos.
+
+Ao tentar realizar um ataque de força bruta em uma página de login, você deve prestar atenção especial a quaisquer diferenças em:
+
+Códigos de status : Durante um ataque de força bruta, o código de status HTTP retornado provavelmente será o mesmo para a grande maioria das tentativas, pois a maioria delas estará incorreta. Se uma tentativa retornar um código de status diferente, isso indica fortemente que o nome de usuário estava correto. A melhor prática para sites é sempre retornar o mesmo código de status, independentemente do resultado, mas essa prática nem sempre é seguida.
+Mensagens de erro : Às vezes, a mensagem de erro exibida é diferente dependendo se o nome de usuário E a senha estão incorretos ou se apenas a senha está incorreta. A melhor prática para sites é usar mensagens genéricas e idênticas em ambos os casos, mas pequenos erros de digitação podem ocorrer. Apenas um caractere fora do lugar torna as duas mensagens distintas, mesmo quando o caractere não é visível na página renderizada.
+Tempos de resposta : Se a maioria das solicitações foi processada com um tempo de resposta semelhante, qualquer desvio desse padrão sugere que algo diferente estava acontecendo nos bastidores. Isso é mais um indício de que o nome de usuário adivinhado pode estar correto. Por exemplo, um site pode verificar se a senha está correta somente se o nome de usuário for válido. Essa etapa extra pode causar um pequeno aumento no tempo de resposta. Isso pode ser sutil, mas um invasor pode tornar esse atraso mais evidente inserindo uma senha excessivamente longa, que o site leva um tempo visivelmente maior para processar.
+LAB
+APRENDIZ
+[Enumeração de nomes de usuário por meio de diferentes respostas](https://portswigger.net/web-security/authentication/password-based/lab-username-enumeration-via-different-responses)
+Não resolvido
+LAB
+PRATICANTE
+[Enumeração de nomes de usuário por meio de respostas sutilmente diferentes](https://portswigger.net/web-security/authentication/password-based/lab-username-enumeration-via-subtly-different-responses)
+Não resolvido
+LAB
+PRATICANTE
+[Enumeração de nomes de usuário por meio do tempo de resposta](https://portswigger.net/web-security/authentication/password-based/lab-username-enumeration-via-response-timing)
+Não resolvido
+Proteção contra força bruta falha
+É altamente provável que um ataque de força bruta envolva muitas tentativas falhas antes que o invasor consiga comprometer uma conta. Logicamente, a proteção contra ataques de força bruta se concentra em dificultar ao máximo a automatização do processo e reduzir a frequência com que um invasor tenta acessar uma conta. As duas maneiras mais comuns de prevenir ataques de força bruta são:
+
+Bloquear a conta que o usuário remoto está tentando acessar caso ele faça muitas tentativas de login sem sucesso.
+Bloquear o endereço IP do usuário remoto caso ele faça muitas tentativas de login em rápida sucessão.
+Ambas as abordagens oferecem diferentes graus de proteção, mas nenhuma é invulnerável, especialmente se implementadas com lógica falha.
+
+Por exemplo, você pode descobrir que seu IP é bloqueado se falhar no login muitas vezes. Em algumas implementações, o contador de tentativas falhas é zerado se o proprietário do IP fizer login com sucesso. Isso significa que um invasor precisaria simplesmente fazer login em sua própria conta a cada poucas tentativas para impedir que esse limite seja atingido.
+
+Nesse caso, basta incluir suas próprias credenciais de login em intervalos regulares ao longo da lista de palavras para tornar essa defesa praticamente inútil.
+
+LAB
+PRATICANTE
+[Proteção contra ataques de força bruta quebrada, bloqueio de IP](https://portswigger.net/web-security/authentication/password-based/lab-broken-bruteforce-protection-ip-block)
+Não resolvido
+Bloqueio de conta
+Uma das maneiras pelas quais os sites tentam impedir ataques de força bruta é bloquear a conta se determinados critérios suspeitos forem atendidos, geralmente um número definido de tentativas de login malsucedidas. Assim como acontece com erros de login comuns, as respostas do servidor indicando que uma conta está bloqueada também podem ajudar um invasor a enumerar nomes de usuário.
+
+LAB
+PRATICANTE
+[Enumeração de nomes de usuário por meio de bloqueio de conta](https://portswigger.net/web-security/authentication/password-based/lab-username-enumeration-via-account-lock)
+Não resolvido
+Bloquear uma conta oferece um certo nível de proteção contra ataques de força bruta direcionados a uma conta específica. No entanto, essa abordagem não impede adequadamente ataques de força bruta nos quais o invasor tenta obter acesso a qualquer conta aleatória que encontrar.
+
+Por exemplo, o seguinte método pode ser usado para contornar esse tipo de proteção:
+
+Crie uma lista de nomes de usuário candidatos que provavelmente sejam válidos. Isso pode ser feito por meio de enumeração de nomes de usuário ou simplesmente com base em uma lista de nomes de usuário comuns.
+Escolha uma lista bem pequena de senhas que você acha que pelo menos um usuário provavelmente possui. É crucial que o número de senhas selecionadas não exceda o número de tentativas de login permitidas. Por exemplo, se você determinou que o limite é de 3 tentativas, você precisa escolher no máximo 3 tentativas de senha.
+Utilizando uma ferramenta como o Burp Intruder, tente cada uma das senhas selecionadas com cada um dos nomes de usuário candidatos. Dessa forma, você pode tentar um ataque de força bruta em todas as contas sem acionar o bloqueio. Basta que um único usuário utilize uma das três senhas para comprometer uma conta.
+O bloqueio de contas também não protege contra ataques de preenchimento de credenciais. Esse tipo de ataque envolve o uso de um dicionário extenso de username:passwordpares, composto por credenciais de login legítimas roubadas em vazamentos de dados. O preenchimento de credenciais se baseia no fato de que muitas pessoas reutilizam o mesmo nome de usuário e senha em vários sites e, portanto, existe a possibilidade de que algumas das credenciais comprometidas no dicionário também sejam válidas no site alvo. O bloqueio de contas não protege contra o preenchimento de credenciais porque cada nome de usuário é tentado apenas uma vez. O preenchimento de credenciais é particularmente perigoso porque, às vezes, pode resultar no comprometimento de várias contas diferentes com um único ataque automatizado.
+
+Limitação da taxa de usuários
+Outra forma que os sites usam para tentar prevenir ataques de força bruta é limitando a taxa de requisições dos usuários. Nesse caso, fazer muitas solicitações de login em um curto período de tempo resulta no bloqueio do seu endereço IP. Normalmente, o IP só pode ser desbloqueado de uma das seguintes maneiras:
+
+Automaticamente, após um determinado período de tempo.
+Manualmente por um administrador
+Manualmente pelo usuário após concluir com sucesso um CAPTCHA.
+A limitação da taxa de requisições por usuário é, por vezes, preferida ao bloqueio de conta por ser menos suscetível à enumeração de nomes de usuário e a ataques de negação de serviço. Contudo, ainda não é completamente segura. Como vimos num exemplo num laboratório anterior, existem várias maneiras pelas quais um atacante pode manipular o seu endereço IP aparente para contornar o bloqueio.
+
+Como o limite é baseado na taxa de solicitações HTTP enviadas do endereço IP do usuário, às vezes também é possível contornar essa defesa se você conseguir descobrir como adivinhar várias senhas com uma única solicitação.
+
+LAB
+ESPECIALISTA
+[Proteção contra ataques de força bruta comprometida, múltiplas credenciais por solicitação.](https://portswigger.net/web-security/authentication/password-based/lab-broken-brute-force-protection-multiple-credentials-per-request)
+Não resolvido
+autenticação básica HTTP
+Embora seja relativamente antiga, sua simplicidade e facilidade de implementação fazem com que você ainda possa encontrar a autenticação básica HTTP sendo usada ocasionalmente. Na autenticação básica HTTP, o cliente recebe um token de autenticação do servidor, construído pela concatenação do nome de usuário e da senha, e codificado em Base64. Esse token é armazenado e gerenciado pelo navegador, que o adiciona automaticamente ao Authorizationcabeçalho de cada requisição subsequente, da seguinte forma:
+
+Authorization: Basic base64(username:password)
+Por diversos motivos, esse método geralmente não é considerado seguro para autenticação. Primeiramente, ele envolve o envio repetido das credenciais de login do usuário a cada requisição. A menos que o site também implemente o HSTS, as credenciais do usuário ficam vulneráveis ​​a ataques do tipo "homem no meio".
+
+Além disso, as implementações de autenticação básica HTTP geralmente não oferecem proteção contra ataques de força bruta. Como o token consiste exclusivamente em valores estáticos, isso pode torná-lo vulnerável a ataques de força bruta.
+
+A autenticação básica HTTP também é particularmente vulnerável a explorações relacionadas à sessão, principalmente CSRF, contra as quais não oferece proteção por si só.
+
+Em alguns casos, explorar vulnerabilidades na autenticação básica HTTP pode conceder ao atacante apenas acesso a uma página aparentemente irrelevante. No entanto, além de ampliar a superfície de ataque, as credenciais expostas dessa forma podem ser reutilizadas em outros contextos, mais confidenciais.
+
+================================================================================
+03 — Autenticação multifator
+================================================================================
+
+Vulnerabilidades na autenticação multifator
+Nesta seção, analisaremos algumas das vulnerabilidades que podem ocorrer em mecanismos de autenticação multifator. Também disponibilizamos diversos laboratórios interativos para demonstrar como você pode explorar essas vulnerabilidades na autenticação multifator.
+
+Muitos sites dependem exclusivamente da autenticação de fator único, que utiliza uma senha para autenticar os usuários. No entanto, alguns exigem que os usuários comprovem sua identidade usando múltiplos fatores de autenticação.
+
+A verificação biométrica é impraticável para a maioria dos sites. No entanto, é cada vez mais comum encontrar autenticação de dois fatores (2FA), tanto obrigatória quanto opcional, baseada em algo que você sabe e algo que você possui . Isso geralmente exige que os usuários insiram uma senha tradicional e um código de verificação temporário gerado por um dispositivo físico externo que eles possuem.
+
+Embora às vezes seja possível para um atacante obter um único fator baseado em conhecimento, como uma senha, obter simultaneamente outro fator de uma fonte externa é consideravelmente menos provável. Por esse motivo, a autenticação de dois fatores é comprovadamente mais segura do que a autenticação de fator único. No entanto, como qualquer medida de segurança, sua segurança depende da sua implementação. Uma autenticação de dois fatores mal implementada pode ser burlada ou até mesmo completamente contornada, assim como a autenticação de fator único.
+
+Vale ressaltar também que os benefícios completos da autenticação multifator só são alcançados com a verificação de múltiplos fatores diferentes . Verificar o mesmo fator de duas maneiras distintas não configura uma verdadeira autenticação de dois fatores. A autenticação de dois fatores baseada em e-mail é um exemplo disso. Embora o usuário precise fornecer uma senha e um código de verificação, o acesso ao código depende apenas do conhecimento das credenciais de login da sua conta de e-mail. Portanto, o fator de autenticação baseado no conhecimento está sendo verificado duas vezes.
+
+Tokens de autenticação de dois fatores
+Os códigos de verificação geralmente são lidos pelo usuário em algum tipo de dispositivo físico. Muitos sites de alta segurança agora fornecem aos usuários um dispositivo dedicado para essa finalidade, como o token RSA ou o teclado numérico que você pode usar para acessar seu banco online ou o laptop do trabalho. Além de serem projetados especificamente para segurança, esses dispositivos dedicados também têm a vantagem de gerar o código de verificação diretamente. Também é comum que os sites usem um aplicativo móvel dedicado, como o Google Authenticator, pelo mesmo motivo.
+
+Por outro lado, alguns sites enviam códigos de verificação para o celular do usuário por SMS. Embora tecnicamente isso ainda verifique o fato de que "você possui algo", é um método suscetível a abusos. Primeiramente, o código é transmitido via SMS em vez de ser gerado pelo próprio dispositivo. Isso cria a possibilidade de interceptação do código. Há também o risco de troca de SIM, em que um invasor obtém fraudulentamente um chip SIM com o número de telefone da vítima. O invasor, então, receberia todas as mensagens SMS enviadas à vítima, incluindo a que contém o código de verificação.
+
+Contornando a autenticação de dois fatores
+Em alguns casos, a implementação da autenticação de dois fatores apresenta falhas que permitem sua completa burla.
+
+Se o usuário for solicitado primeiro a inserir uma senha e, em seguida, a inserir um código de verificação em uma página separada, ele estará efetivamente "logado" antes mesmo de inserir o código de verificação. Nesse caso, vale a pena testar se é possível acessar diretamente as páginas "somente para usuários logados" após concluir a primeira etapa de autenticação. Ocasionalmente, você poderá encontrar sites que não verificam se a segunda etapa foi concluída antes de carregar a página.
+
+LAB
+APRENDIZ
+bypass simples de 2FA
+Não resolvido
+Lógica de verificação de dois fatores falha
+Por vezes, uma falha na lógica da autenticação de dois fatores significa que, após um utilizador concluir o primeiro passo de início de sessão, o website não verifica adequadamente se o mesmo utilizador está a concluir o segundo passo.
+
+Por exemplo, o usuário faz login com suas credenciais normais na primeira etapa, da seguinte forma:
+
+POST /login-steps/first HTTP/1.1
+Host: vulnerable-website.com
+...
+username=carlos&password=qwerty
+Em seguida, é atribuído um cookie relacionado à conta deles, antes de serem direcionados para a segunda etapa do processo de login:
+
+HTTP/1.1 200 OK
+Set-Cookie: account=carlos
+
+GET /login-steps/second HTTP/1.1
+Cookie: account=carlos
+Ao enviar o código de verificação, a solicitação usa esse cookie para determinar a qual conta o usuário está tentando acessar:
+
+POST /login-steps/second HTTP/1.1
+Host: vulnerable-website.com
+Cookie: account=carlos
+...
+verification-code=123456
+Nesse caso, um invasor poderia fazer login usando suas próprias credenciais, mas depois alterar o valor do accountcookie para qualquer nome de usuário arbitrário ao enviar o código de verificação.
+
+POST /login-steps/second HTTP/1.1
+Host: vulnerable-website.com
+Cookie: account=victim-user
+...
+verification-code=123456
+Isso é extremamente perigoso se o atacante conseguir quebrar o código de verificação por força bruta, pois permitiria que ele acessasse contas de usuários aleatórios com base apenas no nome de usuário. Ele nem precisaria saber a senha do usuário.
+
+LAB
+PRATICANTE
+Lógica quebrada da autenticação de dois fatores
+Não resolvido
+Ataques de força bruta a códigos de verificação 2FA
+Assim como acontece com as senhas, os sites precisam tomar medidas para impedir ataques de força bruta ao código de verificação de dois fatores (2FA). Isso é especialmente importante porque o código geralmente é um número simples de 4 ou 6 dígitos. Sem uma proteção adequada contra ataques de força bruta, quebrar esse código é trivial.
+
+Alguns sites tentam impedir isso desconectando automaticamente o usuário caso ele insira um certo número de códigos de verificação incorretos. Na prática, isso é ineficaz, pois um atacante avançado pode até mesmo automatizar esse processo complexo criando macros para o Burp Intruder. A extensão Turbo Intruder também pode ser usada para esse fim.
+
+LAB
+ESPECIALISTA
+
+================================================================================
+04 — Outros mecanismos de autenticação
+================================================================================
+
+Vulnerabilidades em outros mecanismos de autenticação
+Além da funcionalidade básica de login, a maioria dos sites oferece funcionalidades adicionais para permitir que os usuários gerenciem suas contas. Por exemplo, os usuários geralmente podem alterar ou redefinir suas senhas quando as esquecem. Esses mecanismos também podem introduzir vulnerabilidades que podem ser exploradas por um invasor.
+
+Os sites geralmente tomam cuidado para evitar vulnerabilidades conhecidas em suas páginas de login. Mas é fácil negligenciar o fato de que é preciso tomar medidas semelhantes para garantir que as funcionalidades relacionadas sejam igualmente robustas. Isso é especialmente importante nos casos em que um invasor consegue criar sua própria conta e, consequentemente, tem fácil acesso para estudar essas páginas adicionais.
+
+Manter os usuários conectados
+Uma funcionalidade comum é a opção de permanecer conectado mesmo após fechar a sessão do navegador. Geralmente, trata-se de uma simples caixa de seleção com um rótulo como "Lembrar-me" ou "Manter-me conectado".
+
+Essa funcionalidade geralmente é implementada gerando um token de "lembrar-me", que é então armazenado em um cookie persistente. Como possuir esse cookie permite efetivamente ignorar todo o processo de login, a melhor prática é que ele seja difícil de adivinhar. No entanto, alguns sites geram esse cookie com base em uma concatenação previsível de valores estáticos, como o nome de usuário e um registro de data e hora. Alguns chegam a usar a senha como parte do cookie. Essa abordagem é particularmente perigosa se um invasor conseguir criar sua própria conta, pois ele pode estudar seu próprio cookie e potencialmente deduzir como ele é gerado. Uma vez que ele descubra a fórmula, pode tentar usar força bruta nos cookies de outros usuários para obter acesso às suas contas.
+
+Alguns sites partem do princípio de que, se o cookie estiver criptografado de alguma forma, ele não poderá ser adivinhado, mesmo que utilize valores estáticos. Embora isso possa ser verdade se feito corretamente, criptografar o cookie de forma ingênua usando uma codificação simples de duas vias, como Base64, não oferece nenhuma proteção. Mesmo usando criptografia adequada com uma função hash unidirecional, a segurança não é totalmente garantida. Se o atacante conseguir identificar facilmente o algoritmo de hash e nenhum salt for usado, ele poderá potencialmente realizar um ataque de força bruta ao cookie, simplesmente aplicando hash às suas listas de palavras. Esse método pode ser usado para burlar os limites de tentativas de login, caso um limite semelhante não seja aplicado às tentativas de adivinhação do cookie.
+
+LAB
+PRATICANTE
+[Ataque de força bruta a um cookie de login contínuo](https://portswigger.net/web-security/authentication/other-mechanisms/lab-brute-forcing-a-stay-logged-in-cookie)
+Não resolvido
+Mesmo que o atacante não consiga criar sua própria conta, ele ainda poderá explorar essa vulnerabilidade. Usando técnicas comuns, como XSS, um atacante poderia roubar o cookie "lembrar-me" de outro usuário e deduzir como o cookie é construído a partir disso. Se o site foi construído usando um framework de código aberto, os detalhes principais da construção do cookie podem até mesmo estar documentados publicamente.
+
+Em alguns casos raros, pode ser possível obter a senha real de um usuário em texto simples a partir de um cookie, mesmo que esteja criptografada. Versões criptografadas de listas de senhas conhecidas estão disponíveis online, portanto, se a senha do usuário aparecer em uma dessas listas, descriptografar o hash pode, ocasionalmente, ser tão trivial quanto simplesmente colá-lo em um mecanismo de busca. Isso demonstra a importância do salt na criptografia eficaz.
+
+LAB
+PRATICANTE
+[Quebra de senhas offline](https://portswigger.net/web-security/authentication/other-mechanisms/lab-offline-password-cracking)
+Não resolvido
+Redefinição de senhas de usuário
+Na prática, alguns usuários esquecem suas senhas, por isso é comum haver uma maneira de redefini-las. Como a autenticação usual baseada em senha é obviamente impossível nesse cenário, os sites precisam recorrer a métodos alternativos para garantir que o usuário real esteja redefinindo sua própria senha. Por esse motivo, a funcionalidade de redefinição de senha é inerentemente perigosa e precisa ser implementada de forma segura.
+
+Existem algumas maneiras diferentes de implementar esse recurso, com graus variados de vulnerabilidade.
+
+Envio de senhas por e-mail
+É óbvio que enviar a senha atual do usuário jamais deveria ser possível se um site gerencia senhas com segurança. Em vez disso, alguns sites geram uma nova senha e a enviam ao usuário por e-mail.
+
+De modo geral, o envio de senhas persistentes por canais inseguros deve ser evitado. Nesse caso, a segurança depende de a senha gerada expirar após um período muito curto ou de o usuário alterá-la imediatamente. Caso contrário, essa abordagem é altamente suscetível a ataques do tipo "homem no meio".
+
+O e-mail geralmente não é considerado seguro, visto que as caixas de entrada são persistentes e não foram projetadas para o armazenamento seguro de informações confidenciais. Muitos usuários também sincronizam automaticamente suas caixas de entrada entre vários dispositivos por meio de canais inseguros.
+
+Redefinir senhas usando um URL
+Um método mais robusto para redefinir senhas é enviar um URL exclusivo aos usuários que os direciona para uma página de redefinição de senha. Implementações menos seguras desse método utilizam um URL com um parâmetro facilmente adivinhável para identificar qual conta está sendo redefinida, por exemplo:
+
+http://vulnerable-website.com/reset-password?user=victim-user
+Neste exemplo, um atacante poderia alterar o userparâmetro para se referir a qualquer nome de usuário que tenha identificado. Ele seria então direcionado diretamente para uma página onde poderia potencialmente definir uma nova senha para esse usuário arbitrário.
+
+Uma implementação melhor desse processo seria gerar um token de alta entropia e difícil de adivinhar, e criar a URL de redefinição com base nele. No melhor cenário, essa URL não deve fornecer nenhuma pista sobre qual usuário está tendo sua senha redefinida.
+
+http://vulnerable-website.com/reset-password?token=a0ba0d1cb3b63d13822572fcff1a241895d893f659164d4cc550b421ebdd48a8
+Quando o usuário visitar este URL, o sistema deverá verificar se este token existe no servidor e, em caso afirmativo, qual senha do usuário deve ser redefinida. Este token deverá expirar após um curto período de tempo e ser destruído imediatamente após a redefinição da senha.
+
+No entanto, alguns sites não validam o token novamente quando o formulário de redefinição é enviado. Nesse caso, um invasor poderia simplesmente acessar o formulário de redefinição a partir de sua própria conta, excluir o token e usar essa página para redefinir a senha de qualquer usuário.
+
+LAB
+APRENDIZ
+[A lógica de redefinição de senha está quebrada.](https://portswigger.net/web-security/authentication/other-mechanisms/lab-password-reset-broken-logic)
+Não resolvido
+Se a URL no e-mail de redefinição for gerada dinamicamente, ela também poderá ser vulnerável a envenenamento de senha. Nesse caso, um invasor pode potencialmente roubar o token de outro usuário e usá-lo para alterar a senha dele.
+
+LAB
+PRATICANTE
+[Envenenamento de redefinição de senha via middleware](https://portswigger.net/web-security/authentication/other-mechanisms/lab-password-reset-poisoning-via-middleware)
+Não resolvido
+Leia mais
+[envenenamento por redefinição de senha](https://portswigger.net/web-security/host-header/exploiting/password-reset-poisoning)
+
+Alterar senhas de usuário
+Normalmente, alterar sua senha envolve inserir sua senha atual e, em seguida, a nova senha duas vezes. Essas páginas dependem fundamentalmente do mesmo processo de verificação de correspondência entre nome de usuário e senha que uma página de login normal. Portanto, essas páginas podem ser vulneráveis ​​às mesmas técnicas.
+
+A funcionalidade de alteração de senha pode ser particularmente perigosa se permitir que um invasor acesse-a diretamente sem estar autenticado como o usuário vítima. Por exemplo, se o nome de usuário for fornecido em um campo oculto, um invasor poderá editar esse valor na requisição para atingir usuários aleatórios. Isso pode ser explorado para enumerar nomes de usuário e realizar ataques de força bruta contra senhas.
+
+================================================================================
+05 — Proteção dos mecanismos
+================================================================================
+
+Como proteger seus mecanismos de autenticação
+Nesta seção, falaremos sobre como você pode evitar que algumas das vulnerabilidades que discutimos ocorram em seus mecanismos de autenticação.
+
+A autenticação é um tópico complexo e, como demonstramos, infelizmente é muito fácil que vulnerabilidades e falhas se infiltrem. Descrever todas as medidas possíveis que você pode tomar para proteger seus próprios sites é claramente impossível. No entanto, existem alguns princípios gerais que você deve sempre seguir.
+
+Tenha cuidado com as credenciais do usuário.
+Mesmo os mecanismos de autenticação mais robustos são ineficazes se você, sem querer, divulgar um conjunto válido de credenciais de login para um invasor. É óbvio que você nunca deve enviar dados de login por conexões não criptografadas. Embora você possa ter implementado HTTPS para suas solicitações de login, certifique-se de reforçar essa segurança redirecionando todas as tentativas de requisição HTTP para HTTPS também.
+
+Você também deve auditar seu site para garantir que nenhum nome de usuário ou endereço de e-mail seja divulgado por meio de perfis publicamente acessíveis ou refletido em respostas HTTP, por exemplo.
+
+Não conte com os usuários para segurança.
+Medidas rigorosas de autenticação geralmente exigem um esforço adicional dos seus usuários. A natureza humana torna praticamente inevitável que alguns usuários encontrem maneiras de evitar esse esforço. Portanto, você precisa incentivar comportamentos seguros sempre que possível.
+
+O exemplo mais óbvio é a implementação de uma política de senhas eficaz. Algumas das políticas mais tradicionais falham porque as pessoas forçam a inclusão de suas próprias senhas previsíveis. Em vez disso, pode ser mais eficaz implementar um verificador de senhas simples, que permita aos usuários testar senhas e forneça feedback sobre sua força em tempo real. Um exemplo popular é a biblioteca JavaScript `password_check` zxcvbn, desenvolvida pelo Dropbox. Ao permitir apenas senhas com alta classificação pelo verificador de senhas, você pode impor o uso de senhas seguras de forma mais eficaz do que com políticas tradicionais.
+
+Impedir a enumeração de nomes de usuário
+Para um atacante, é consideravelmente mais fácil quebrar seus mecanismos de autenticação se você revelar que um usuário existe no sistema. Há até situações em que, devido à natureza do site, o simples fato de uma pessoa possuir uma conta já constitui informação sensível.
+
+Independentemente da validade do nome de usuário tentado, é importante usar mensagens de erro genéricas e idênticas, e garantir que elas sejam realmente idênticas. Você deve sempre retornar o mesmo código de status HTTP para cada solicitação de login e, por fim, tornar os tempos de resposta em diferentes cenários os mais indistinguíveis possível.
+
+Implementar proteção robusta contra ataques de força bruta
+Considerando a simplicidade com que se pode construir um ataque de força bruta, é vital garantir que você tome medidas para prevenir, ou pelo menos interromper, quaisquer tentativas de ataques de força bruta a logins.
+
+Um dos métodos mais eficazes é implementar uma limitação rigorosa da taxa de acessos por usuário, baseada no endereço IP. Isso deve incluir medidas para impedir que invasores manipulem o endereço IP aparente do usuário. Idealmente, você deve exigir que o usuário complete um teste CAPTCHA a cada tentativa de login após atingir um determinado limite.
+
+Tenha em mente que isso não garante a eliminação completa da ameaça de ataques de força bruta. No entanto, tornar o processo o mais tedioso e manual possível aumenta a probabilidade de que qualquer potencial atacante desista e procure um alvo mais vulnerável.
+
+Verifique três vezes a sua lógica de verificação.
+Como demonstrado em nossos [laboratórios](https://portswigger.net/web-security/all-labs#authentication) , é fácil que falhas lógicas simples se infiltrem no código, as quais, no caso de autenticação, têm o potencial de comprometer completamente seu site e seus usuários. Auditar minuciosamente qualquer lógica de verificação ou validação para eliminar falhas é absolutamente essencial para uma autenticação robusta. Uma verificação que pode ser burlada, em última análise, não é muito melhor do que nenhuma verificação.
+
+Não se esqueça das funcionalidades complementares.
+Certifique-se de não se concentrar apenas nas páginas de login principais e negligenciar funcionalidades adicionais relacionadas à autenticação. Isso é particularmente importante nos casos em que o atacante pode registrar sua própria conta e explorar essas funcionalidades. Lembre-se de que a redefinição ou alteração de senha representa uma superfície de ataque tão válida quanto o mecanismo de login principal e, consequentemente, deve ser igualmente robusta.
+
+Implemente a autenticação multifator adequada.
+Embora a autenticação multifator possa não ser prática para todos os sites, quando implementada corretamente, ela é muito mais segura do que o login baseado apenas em senha. Lembre-se de que verificar várias instâncias do mesmo fator não é uma verdadeira autenticação multifator. Enviar códigos de verificação por e-mail é essencialmente uma forma mais demorada de autenticação de fator único.
+
+A autenticação de dois fatores via SMS verifica tecnicamente dois fatores (algo que você sabe e algo que você possui). No entanto, o potencial para abusos, como a troca de SIM, por exemplo, significa que esse sistema pode ser pouco confiável.
+
+Idealmente, a autenticação de dois fatores (2FA) deve ser implementada usando um dispositivo ou aplicativo dedicado que gere o código de verificação diretamente. Como são desenvolvidos especificamente para fornecer segurança, esses dispositivos geralmente são mais seguros.
+
+Por fim, assim como na lógica de autenticação principal, certifique-se de que a lógica nas suas verificações de 2FA seja sólida para que não possa ser facilmente contornada.

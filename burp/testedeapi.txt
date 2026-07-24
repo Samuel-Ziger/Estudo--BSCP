@@ -1,0 +1,410 @@
+Teste de API
+As APIs (Interfaces de Programação de Aplicativos) permitem que sistemas e aplicativos de software se comuniquem e compartilhem dados. O teste de APIs é importante, pois vulnerabilidades nelas podem comprometer aspectos essenciais da confidencialidade, integridade e disponibilidade de um site.
+
+Todos os sites dinâmicos são compostos por APIs, portanto, vulnerabilidades clássicas da web, como injeção de SQL, podem ser classificadas como testes de API. Neste tópico, ensinaremos como testar APIs que não são totalmente utilizadas pelo front-end do site, com foco em APIs RESTful e JSON. Também ensinaremos como testar vulnerabilidades de poluição de parâmetros no servidor que podem afetar APIs internas.
+
+Para ilustrar a sobreposição entre testes de API e testes web em geral, criamos um mapeamento entre nossos tópicos existentes e o OWASP API Security Top 10 2023 .
+
+Exemplo de teste de API
+Páginas relacionadas
+Para aprender mais sobre APIs GraphQL, consulte o tópico " Vulnerabilidades da API GraphQL" em nossa Academia.
+
+Reconhecimento de API
+Para começar a testar uma API, primeiro você precisa descobrir o máximo de informações possível sobre ela, a fim de identificar sua superfície de ataque.
+
+Para começar, você deve identificar os endpoints da API. Esses são os locais onde uma API recebe solicitações sobre um recurso específico em seu servidor. Por exemplo, considere a seguinte GETsolicitação:
+
+GET /api/books HTTP/1.1
+Host: example.com
+O endpoint da API para esta solicitação é /api/books. Isso resulta em uma interação com a API para recuperar uma lista de livros de uma biblioteca. Outro endpoint da API poderia ser, por exemplo, /api/books/mystery, que recuperaria uma lista de livros misteriosos.
+
+Após identificar os endpoints, você precisa determinar como interagir com eles. Isso permite construir requisições HTTP válidas para testar a API. Por exemplo, você deve obter informações sobre o seguinte:
+
+Os dados de entrada que a API processa incluem parâmetros obrigatórios e opcionais.
+Os tipos de solicitações que a API aceita, incluindo os métodos HTTP e formatos de mídia suportados.
+Limites de taxa e mecanismos de autenticação.
+Documentação da API
+As APIs geralmente são documentadas para que os desenvolvedores saibam como usá-las e integrá-las.
+
+A documentação pode estar em formatos legíveis por humanos e legíveis por máquina. A documentação legível por humanos é projetada para que os desenvolvedores entendam como usar a API. Ela pode incluir explicações detalhadas, exemplos e cenários de uso. A documentação legível por máquina é projetada para ser processada por softwares para automatizar tarefas como integração e validação de APIs. Ela é escrita em formatos estruturados como JSON ou XML.
+
+A documentação da API geralmente é pública, principalmente se a API for destinada a desenvolvedores externos. Nesse caso, sempre comece sua análise revisando a documentação.
+
+Descobrindo a documentação da API
+Mesmo que a documentação da API não esteja disponível publicamente, você ainda poderá acessá-la navegando pelos aplicativos que utilizam a API.
+
+Para isso, você pode usar o Burp Scanner para rastrear a API. Você também pode navegar manualmente pelos aplicativos usando o navegador do Burp. Procure por endpoints que possam fazer referência à documentação da API, por exemplo:
+
+/api
+/swagger/index.html
+/openapi.json
+Se você identificar um ponto de extremidade para um recurso, certifique-se de investigar o caminho base. Por exemplo, se você identificar o ponto de extremidade do recurso /api/swagger/v1/users/123, deverá investigar os seguintes caminhos:
+
+/api/swagger/v1
+/api/swagger
+/api
+Você também pode usar uma lista de caminhos comuns para encontrar documentação usando o Intruder.
+
+LAB
+APRENDIZ
+Explorando um endpoint de API usando a documentação
+Não resolvido
+Utilizando documentação legível por máquina
+Você pode usar uma variedade de ferramentas automatizadas para analisar qualquer documentação de API legível por máquina que encontrar.
+
+Você pode usar o Burp Scanner para rastrear e auditar a documentação OpenAPI ou qualquer outra documentação em formato JSON ou YAML. Você também pode analisar a documentação OpenAPI usando o BApp OpenAPI Parser .
+
+Você também pode usar uma ferramenta especializada para testar os endpoints documentados, como o Postman ou o SoapUI .
+
+Identificação de endpoints de API
+Você também pode obter muitas informações navegando pelos aplicativos que usam a API. Isso geralmente vale a pena mesmo se você tiver acesso à documentação da API, pois às vezes a documentação pode ser imprecisa ou desatualizada.
+
+Você pode usar o Burp Scanner para rastrear o aplicativo e, em seguida, investigar manualmente as superfícies de ataque interessantes usando o navegador do Burp.
+
+Ao navegar pelo aplicativo, procure por padrões que sugiram endpoints de API na estrutura da URL, como `<URL> /api/`. Também fique atento a arquivos JavaScript. Eles podem conter referências a endpoints de API que você não acessou diretamente pelo navegador. O Burp Scanner extrai automaticamente alguns endpoints durante as buscas, mas para uma extração mais completa, use o BApp JS Link Finder . Você também pode revisar manualmente os arquivos JavaScript no Burp.
+
+Interagindo com endpoints de API
+Após identificar os endpoints da API, interaja com eles usando o Burp Repeater e o Burp Intruder. Isso permite observar o comportamento da API e descobrir novas áreas de ataque. Por exemplo, você pode investigar como a API reage à alteração do método HTTP e do tipo de mídia.
+
+Ao interagir com os endpoints da API, revise atentamente as mensagens de erro e outras respostas. Às vezes, elas contêm informações que você pode usar para construir uma solicitação HTTP válida.
+
+Identificação de métodos HTTP suportados
+O método HTTP especifica a ação a ser executada em um recurso. Por exemplo:
+
+GET- Recupera dados de um recurso.
+PATCH- Aplica alterações parciais a um recurso.
+OPTIONS- Recupera informações sobre os tipos de métodos de requisição que podem ser usados ​​em um recurso.
+Um endpoint de API pode suportar diferentes métodos HTTP. Portanto, é importante testar todos os métodos potenciais ao investigar endpoints de API. Isso pode permitir a identificação de funcionalidades adicionais do endpoint, ampliando a superfície de ataque.
+
+Por exemplo, o endpoint /api/taskspode suportar os seguintes métodos:
+
+GET /api/tasks- Recupera uma lista de tarefas.
+POST /api/tasks- Cria uma nova tarefa.
+DELETE /api/tasks/1- Exclui uma tarefa.
+Você pode usar a lista de verbos HTTP integrada no Burp Intruder para percorrer automaticamente uma variedade de métodos.
+
+Observação
+Ao testar diferentes métodos HTTP, priorize objetos de baixa prioridade. Isso ajuda a evitar consequências indesejadas, como alterar itens críticos ou criar registros excessivos.
+
+Identificação dos tipos de conteúdo suportados
+Os endpoints da API geralmente esperam dados em um formato específico. Portanto, seu comportamento pode variar dependendo do tipo de conteúdo dos dados fornecidos em uma solicitação. Alterar o tipo de conteúdo pode permitir que você:
+
+Acione erros que revelem informações úteis.
+Contornar defesas falhas.
+Aproveite as diferenças na lógica de processamento. Por exemplo, uma API pode ser segura ao lidar com dados JSON, mas suscetível a ataques de injeção ao lidar com XML.
+Para alterar o tipo de conteúdo, modifique o Content-Typecabeçalho e, em seguida, reformate o corpo da solicitação de acordo. Você pode usar o BApp Conversor de Tipo de Conteúdo para converter automaticamente os dados enviados nas solicitações entre XML e JSON.
+
+LAB
+PRATICANTE
+Identificar e explorar um endpoint de API não utilizado
+Não resolvido
+Utilizando o Intruder para encontrar endpoints ocultos
+Após identificar alguns endpoints de API iniciais, você pode usar o Intruder para descobrir endpoints ocultos. Por exemplo, considere um cenário em que você identificou o seguinte endpoint de API para atualização de informações do usuário:
+
+PUT /api/user/update
+
+Para identificar endpoints ocultos, você pode usar o Burp Intruder para encontrar outros recursos com a mesma estrutura. Por exemplo, você pode adicionar um payload à /updateposição do caminho com uma lista de outras funções comuns, como deletee add.
+
+Ao procurar endpoints ocultos, use listas de palavras baseadas em convenções comuns de nomenclatura de APIs e termos da indústria. Certifique-se também de incluir termos relevantes para a aplicação, com base em sua análise inicial.
+
+Identificando parâmetros ocultos
+Ao realizar reconhecimento de API, você pode encontrar parâmetros não documentados que a API suporta. Você pode tentar usá-los para alterar o comportamento do aplicativo. O Burp inclui diversas ferramentas que podem ajudá-lo a identificar parâmetros ocultos:
+
+O Burp Intruder permite descobrir automaticamente parâmetros ocultos, usando uma lista de palavras com nomes de parâmetros comuns para substituir parâmetros existentes ou adicionar novos. Certifique-se também de incluir nomes relevantes para a aplicação, com base no seu reconhecimento inicial.
+O Param miner BApp permite adivinhar automaticamente até 65.536 nomes de parâmetros por requisição. O Param miner adivinha automaticamente nomes relevantes para a aplicação, com base em informações obtidas do escopo.
+A ferramenta de descoberta de conteúdo permite que você descubra conteúdo que não está vinculado a partir do conteúdo visível que você pode acessar navegando, incluindo parâmetros.
+Vulnerabilidades de atribuição em massa
+A atribuição em massa (também conhecida como vinculação automática) pode criar parâmetros ocultos inadvertidamente. Isso ocorre quando frameworks de software vinculam automaticamente parâmetros de requisição a campos de um objeto interno. A atribuição em massa pode, portanto, resultar em um aplicativo que suporta parâmetros que nunca foram planejados para serem processados ​​pelo desenvolvedor.
+
+Identificando parâmetros ocultos
+Como a atribuição em massa cria parâmetros a partir de campos de objetos, você geralmente pode identificar esses parâmetros ocultos examinando manualmente os objetos retornados pela API.
+
+Por exemplo, considere uma PATCH /api/users/solicitação que permite aos usuários atualizar seu nome de usuário e e-mail e que inclui o seguinte JSON:
+
+{
+    "username": "wiener",
+    "email": "wiener@example.com",
+}
+Uma GET /api/users/123solicitação simultânea retorna o seguinte JSON:
+
+{
+    "id": 123,
+    "name": "John Doe",
+    "email": "john@example.com",
+    "isAdmin": "false"
+}
+Isso pode indicar que os parâmetros ocultos idestão isAdminvinculados ao objeto de usuário interno, juntamente com os parâmetros de nome de usuário e e-mail atualizados.
+
+Testando vulnerabilidades de atribuição em massa
+Para testar se é possível modificar o isAdminvalor do parâmetro enumerado, adicione-o à PATCHsolicitação:
+
+{
+    "username": "wiener",
+    "email": "wiener@example.com",
+    "isAdmin": false,
+}
+Além disso, envie uma PATCHsolicitação com um isAdminvalor de parâmetro inválido:
+
+{
+    "username": "wiener",
+    "email": "wiener@example.com",
+    "isAdmin": "foo",
+}
+Se o aplicativo se comportar de maneira diferente, isso pode sugerir que o valor inválido afeta a lógica da consulta, mas o valor válido não. Isso pode indicar que o parâmetro pode ser atualizado com sucesso pelo usuário.
+
+Em seguida, você pode enviar uma PATCHsolicitação com o isAdminvalor do parâmetro definido como true, para tentar explorar a vulnerabilidade:
+
+{
+    "username": "wiener",
+    "email": "wiener@example.com",
+    "isAdmin": true,
+}
+Se o isAdminvalor na solicitação estiver vinculado ao objeto do usuário sem a devida validação e sanitização, o usuário wienerpoderá receber privilégios de administrador indevidamente. Para determinar se esse é o caso, navegue pelo aplicativo para wienerverificar se você consegue acessar as funcionalidades de administrador.
+
+LAB
+PRATICANTE
+Exploração de uma vulnerabilidade de atribuição em massa
+Não resolvido
+Prevenção de vulnerabilidades em APIs
+Ao projetar APIs, certifique-se de que a segurança seja considerada desde o início. Em particular, certifique-se de:
+
+Proteja sua documentação se não pretende que sua API seja acessível publicamente.
+Assegure-se de que sua documentação esteja sempre atualizada para que os testadores legítimos tenham total visibilidade da superfície de ataque da API.
+Aplique uma lista de permissões dos métodos HTTP permitidos.
+Verifique se o tipo de conteúdo é o esperado para cada solicitação ou resposta.
+Use mensagens de erro genéricas para evitar revelar informações que possam ser úteis para um atacante.
+Utilize medidas de proteção em todas as versões da sua API, não apenas na versão de produção atual.
+Para evitar vulnerabilidades de atribuição em massa, permita as propriedades que podem ser atualizadas pelo usuário e bloqueie as propriedades sensíveis que não devem ser atualizadas pelo usuário.
+Poluição de parâmetros do lado do servidor
+Alguns sistemas contêm APIs internas que não são diretamente acessíveis pela internet. A poluição de parâmetros do lado do servidor ocorre quando um site incorpora a entrada do usuário em uma solicitação do lado do servidor para uma API interna sem a codificação adequada. Isso significa que um invasor pode ser capaz de manipular ou injetar parâmetros, o que pode permitir que ele, por exemplo:
+
+Substituir parâmetros existentes.
+Modificar o comportamento do aplicativo.
+Acesso a dados não autorizados.
+Você pode testar qualquer entrada do usuário em busca de qualquer tipo de contaminação de parâmetros. Por exemplo, parâmetros de consulta, campos de formulário, cabeçalhos e parâmetros de caminho de URL podem ser vulneráveis.
+
+exemplo de poluição de parâmetros do lado do servidor
+Observação
+Essa vulnerabilidade às vezes é chamada de poluição de parâmetros HTTP. No entanto, esse termo também é usado para se referir a uma técnica de bypass de firewall de aplicativos da web (WAF). Para evitar confusão, neste tópico nos referiremos apenas à poluição de parâmetros do lado do servidor.
+
+Além disso, apesar do nome semelhante, essa classe de vulnerabilidade tem muito pouco em comum com a poluição de protótipos do lado do servidor .
+
+Testando a presença de parâmetros incorretos no servidor na string de consulta.
+Para testar a presença de parâmetros incorretos no servidor na string de consulta, insira caracteres de sintaxe de consulta como #, &, e =em sua entrada e observe como o aplicativo responde.
+
+Considere um aplicativo vulnerável que permite pesquisar outros usuários com base em seus nomes de usuário. Ao pesquisar um usuário, seu navegador faz a seguinte solicitação:
+
+GET /userSearch?name=peter&back=/home
+Para recuperar informações do usuário, o servidor consulta uma API interna com a seguinte solicitação:
+
+GET /users/search?name=peter&publicProfile=true
+Truncar cadeias de consulta
+Você pode usar um caractere codificado em URL #para tentar truncar a solicitação do lado do servidor. Para ajudar na interpretação da resposta, você também pode adicionar uma string após o #caractere.
+
+Por exemplo, você poderia modificar a string de consulta para o seguinte:
+
+GET /userSearch?name=peter%23foo&back=/home
+O front-end tentará acessar a seguinte URL:
+
+GET /users/search?name=peter#foo&publicProfile=true
+Observação
+É essencial que você codifique o #caractere em URL. Caso contrário, o aplicativo front-end o interpretará como um identificador de fragmento e ele não será passado para a API interna.
+
+Analise a resposta em busca de pistas sobre se a consulta foi truncada. Por exemplo, se a resposta retornar o usuário peter, a consulta do lado do servidor pode ter sido truncada. Se uma Invalid namemensagem de erro for retornada, o aplicativo pode ter interpretado fooo usuário como parte do nome de usuário. Isso sugere que a solicitação do lado do servidor pode não ter sido truncada.
+
+Se você conseguir truncar a requisição do lado do servidor, isso elimina a necessidade de o publicProfilecampo ser definido como verdadeiro. Você pode explorar essa vulnerabilidade para retornar perfis de usuário não públicos.
+
+Injetar parâmetros inválidos
+Você pode usar um caractere codificado em URL &para tentar adicionar um segundo parâmetro à solicitação do lado do servidor.
+
+Por exemplo, você poderia modificar a string de consulta para o seguinte:
+
+GET /userSearch?name=peter%26foo=xyz&back=/home
+Isso resulta na seguinte solicitação do lado do servidor para a API interna:
+
+GET /users/search?name=peter&foo=xyz&publicProfile=true
+Analise a resposta em busca de pistas sobre como o parâmetro adicional é interpretado. Por exemplo, se a resposta permanecer inalterada, isso pode indicar que o parâmetro foi injetado com sucesso, mas ignorado pela aplicação.
+
+Para ter uma visão mais completa, você precisará realizar mais testes.
+
+Injetando parâmetros válidos
+Se você conseguir modificar a string de consulta, poderá tentar adicionar um segundo parâmetro válido à solicitação do lado do servidor.
+
+Páginas relacionadas
+Para obter informações sobre como identificar parâmetros que você pode inserir na string de consulta, consulte a seção "Encontrando parâmetros ocultos" .
+
+Por exemplo, se você já identificou o emailparâmetro, pode adicioná-lo à string de consulta da seguinte forma:
+
+GET /userSearch?name=peter%26email=foo&back=/home
+Isso resulta na seguinte solicitação do lado do servidor para a API interna:
+
+GET /users/search?name=peter&email=foo&publicProfile=true
+Analise a resposta para obter pistas sobre como o parâmetro adicional é interpretado.
+
+Substituir parâmetros existentes
+Para confirmar se a aplicação é vulnerável à poluição de parâmetros no servidor, você pode tentar sobrescrever o parâmetro original. Faça isso injetando um segundo parâmetro com o mesmo nome.
+
+Por exemplo, você poderia modificar a string de consulta para o seguinte:
+
+GET /userSearch?name=peter%26name=carlos&back=/home
+Isso resulta na seguinte solicitação do lado do servidor para a API interna:
+
+GET /users/search?name=peter&name=carlos&publicProfile=true
+A API interna interpreta dois nameparâmetros. O impacto disso depende de como o aplicativo processa o segundo parâmetro. Isso varia de acordo com as diferentes tecnologias web. Por exemplo:
+
+O PHP analisa apenas o último parâmetro. Isso resultaria em uma pesquisa do usuário por carlos.
+O ASP.NET combina ambos os parâmetros. Isso resultaria em uma pesquisa do usuário por peter,carlos, o que poderia gerar uma Invalid usernamemensagem de erro.
+O Node.js/Express analisa apenas o primeiro parâmetro. Isso resultaria em uma pesquisa do usuário por peter, fornecendo um resultado inalterado.
+Se você conseguir sobrescrever o parâmetro original, poderá explorar uma vulnerabilidade. Por exemplo, você poderia adicionar algo name=administratorà solicitação. Isso pode permitir que você faça login como usuário administrador.
+
+LAB
+PRATICANTE
+Exploração de problemas de parâmetros no servidor em uma string de consulta
+Não resolvido
+Testando a presença de parâmetros no servidor em caminhos REST.
+Uma API RESTful pode incluir nomes e valores de parâmetros no caminho da URL, em vez da string de consulta. Por exemplo, considere o seguinte caminho:
+
+/api/users/123
+O caminho da URL pode ser dividido da seguinte forma:
+
+/apié o ponto de extremidade raiz da API.
+/usersrepresenta um recurso, neste caso users.
+/123representa um parâmetro, neste caso um identificador para o usuário específico.
+Considere um aplicativo que permite editar perfis de usuário com base em seus nomes de usuário. As solicitações são enviadas para o seguinte endpoint:
+
+GET /edit_profile.php?name=peter
+Isso resulta na seguinte solicitação do lado do servidor:
+
+GET /api/private/users/peter
+Um atacante pode conseguir manipular os parâmetros do caminho da URL no servidor para explorar a API. Para testar essa vulnerabilidade, adicione sequências de travessia de diretório para modificar os parâmetros e observe como o aplicativo responde.
+
+peter/../adminVocê pode enviar o valor do parâmetro codificado em URL name:
+
+GET /edit_profile.php?name=peter%2f..%2fadmin
+Isso pode resultar na seguinte solicitação do lado do servidor:
+
+GET /api/private/users/peter/../admin
+Se o cliente do lado do servidor ou a API de back-end normalizarem esse caminho, ele poderá ser resolvido para /api/private/users/admin.
+
+LAB
+ESPECIALISTA
+Exploração de problemas de parâmetros no servidor em uma URL REST
+Não resolvido
+Testando a contaminação de parâmetros do lado do servidor em formatos de dados estruturados.
+Um atacante pode ser capaz de manipular parâmetros para explorar vulnerabilidades no processamento de outros formatos de dados estruturados pelo servidor, como JSON ou XML. Para testar isso, insira dados estruturados inesperados nas entradas do usuário e observe como o servidor responde.
+
+Considere um aplicativo que permite aos usuários editar seus perfis e, em seguida, aplica as alterações com uma solicitação a uma API do lado do servidor. Quando você edita seu nome, seu navegador faz a seguinte solicitação:
+
+POST /myaccount
+name=peter
+Isso resulta na seguinte solicitação do lado do servidor:
+
+PATCH /users/7312/update
+{"name":"peter"}
+Você pode tentar adicionar o access_levelparâmetro à solicitação da seguinte forma:
+
+POST /myaccount
+name=peter","access_level":"administrator
+Se a entrada do usuário for adicionada aos dados JSON do lado do servidor sem validação ou higienização adequadas, isso resultará na seguinte solicitação do lado do servidor:
+
+PATCH /users/7312/update
+{"name":"peter","access_level":"administrator"}
+Isso pode resultar na peterconcessão de acesso de administrador ao usuário.
+
+Páginas relacionadas
+Para obter informações sobre como identificar parâmetros que você pode inserir na string de consulta, consulte a seção "Encontrando parâmetros ocultos" .
+
+Considere um exemplo semelhante, mas onde a entrada do usuário no lado do cliente está em dados JSON. Quando você edita seu nome, seu navegador faz a seguinte solicitação:
+
+POST /myaccount
+{"name": "peter"}
+Isso resulta na seguinte solicitação do lado do servidor:
+
+PATCH /users/7312/update
+{"name":"peter"}
+Você pode tentar adicionar o access_levelparâmetro à solicitação da seguinte forma:
+
+POST /myaccount
+{"name": "peter\",\"access_level\":\"administrator"}
+Se a entrada do usuário for decodificada e adicionada aos dados JSON do servidor sem a codificação adequada, isso resultará na seguinte solicitação do lado do servidor:
+
+PATCH /users/7312/update
+{"name":"peter","access_level":"administrator"}
+Novamente, isso pode resultar na peterconcessão de acesso de administrador ao usuário.
+
+A injeção de formato estruturado também pode ocorrer em respostas. Por exemplo, isso pode acontecer se a entrada do usuário for armazenada com segurança em um banco de dados e, em seguida, incorporada a uma resposta JSON de uma API de back-end sem a codificação adequada. Geralmente, é possível detectar e explorar a injeção de formato estruturado em respostas da mesma forma que em requisições.
+
+Observação
+O exemplo abaixo está em JSON, mas a contaminação de parâmetros no servidor pode ocorrer em qualquer formato de dados estruturados. Para um exemplo em XML, consulte a seção sobre ataques XInclude no tópico sobre injeção de entidade externa XML (XXE).
+
+Testes com ferramentas automatizadas
+O Burp inclui ferramentas automatizadas que podem ajudar você a detectar vulnerabilidades de poluição de parâmetros no servidor.
+
+O Burp Scanner detecta automaticamente transformações de entrada suspeitas durante a auditoria. Essas transformações ocorrem quando um aplicativo recebe a entrada do usuário, a transforma de alguma forma e, em seguida, processa o resultado. Esse comportamento não constitui necessariamente uma vulnerabilidade, portanto, você precisará realizar testes adicionais usando as técnicas manuais descritas acima. Para obter mais informações, consulte a definição do problema "Transformação de entrada suspeita" .
+
+Você também pode usar o Backslash Powered Scanner BApp para identificar vulnerabilidades de injeção no servidor. O scanner classifica as entradas como entediantes, interessantes ou vulneráveis. Você precisará investigar as entradas interessantes usando as técnicas manuais descritas acima. Para obter mais informações, consulte o whitepaper Backslash Powered Scanning: hunting unknown vulnerability classes .
+
+Prevenção da poluição de parâmetros no servidor
+Para evitar a poluição de parâmetros no servidor, use uma lista de permissões para definir os caracteres que não precisam de codificação e certifique-se de que todas as outras entradas do usuário sejam codificadas antes de serem incluídas em uma solicitação do servidor. Você também deve garantir que todas as entradas estejam de acordo com o formato e a estrutura esperados.
+Alinhamento da Web Security Academy com as 10 principais vulnerabilidades de API da OWASP.
+A Fundação OWASP publica periodicamente uma lista de riscos críticos de segurança específicos de APIs. Embora alguns desses riscos tenham nomes diferentes no contexto de APIs, muitos deles estão alinhados com os tópicos existentes em nossa Academia de Segurança Web.
+
+A tabela abaixo especifica quais tópicos da Web Security Academy são relevantes para as 10 principais vulnerabilidades de API da OWASP:
+
+Risco
+
+Tópicos relevantes da Web Security Academy
+
+autorização de nível de objeto quebrado
+
+Vulnerabilidades de controle de acesso e escalonamento de privilégios
+
+Autenticação quebrada
+
+Vulnerabilidades de autenticação
+
+Vulnerabilidades de autenticação OAuth 2.0
+
+Ataques JWT
+
+autorização de nível de propriedade de objeto quebrado
+
+Vulnerabilidades de atribuição em massa
+
+Consumo irrestrito de recursos
+
+Condições de corrida
+
+Vulnerabilidades no upload de arquivos
+
+autorização de nível de função quebrada
+
+Vulnerabilidades de controle de acesso e escalonamento de privilégios
+
+Acesso irrestrito a fluxos de negócios confidenciais
+
+Vulnerabilidades na lógica de negócios
+
+falsificação de requisição do lado do servidor
+
+Falsificação de solicitação do lado do servidor (SSRF)
+
+configuração de segurança incorreta
+
+Compartilhamento de recursos entre origens diferentes (CORS)
+
+vulnerabilidades de divulgação de informações
+
+ataques de cabeçalho de host HTTP
+
+contrabando de requisições HTTP
+
+Gestão inadequada de estoque
+
+Teste de API
+
+Consumo inseguro de APIs
+
+Teste de API
+
+Você pode ler mais sobre o OWASP API Top 10 no site da OWASP, em OWASP API Security Top 10 - 2023 .

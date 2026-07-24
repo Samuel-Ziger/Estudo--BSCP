@@ -1,0 +1,235 @@
+Vulnerabilidades no upload de arquivos
+Nesta seção, você aprenderá como funções simples de upload de arquivos podem ser usadas como um vetor poderoso para diversos ataques de alta gravidade. Mostraremos como contornar mecanismos de defesa comuns para fazer o upload de um web shell, permitindo que você assuma o controle total de um servidor web vulnerável. Dada a frequência com que as funções de upload de arquivos são utilizadas, saber como testá-las corretamente é um conhecimento essencial.
+
+Vulnerabilidades no upload de arquivos
+Laboratórios
+Se você já está familiarizado com os conceitos básicos por trás das vulnerabilidades de upload de arquivos e apenas deseja praticar, pode acessar todos os laboratórios deste tópico no link abaixo.
+
+Veja todos os laboratórios de upload de arquivos
+O que são vulnerabilidades de upload de arquivos?
+Vulnerabilidades de upload de arquivos ocorrem quando um servidor web permite que usuários enviem arquivos para seu sistema de arquivos sem validar adequadamente informações como nome, tipo, conteúdo ou tamanho. A falha em impor restrições apropriadas a esses dados pode significar que até mesmo uma função básica de upload de imagens pode ser usada para enviar arquivos arbitrários e potencialmente perigosos. Isso pode incluir até mesmo arquivos de script do lado do servidor que permitem a execução remota de código.
+
+Em alguns casos, o simples ato de enviar o arquivo já é suficiente para causar danos. Outros ataques podem envolver uma requisição HTTP subsequente para o arquivo, geralmente para forçar sua execução pelo servidor.
+
+Qual o impacto das vulnerabilidades no upload de arquivos?
+O impacto das vulnerabilidades no carregamento de arquivos geralmente depende de dois fatores principais:
+
+Qual aspecto do arquivo o site não consegue validar corretamente, seja o tamanho, o tipo, o conteúdo, etc.?
+Quais restrições são impostas ao arquivo após o seu carregamento bem-sucedido?
+Na pior das hipóteses, o tipo do arquivo não é validado corretamente e a configuração do servidor permite que certos tipos de arquivo (como arquivos .txt .phpe .txt .jsp) sejam executados como código. Nesse caso, um atacante poderia potencialmente enviar um arquivo de código do lado do servidor que funciona como um web shell, concedendo-lhe efetivamente controle total sobre o servidor.
+
+Se o nome do arquivo não for validado corretamente, isso pode permitir que um invasor sobrescreva arquivos críticos simplesmente enviando um arquivo com o mesmo nome. Se o servidor também for vulnerável a ataques de travessia de diretório, isso pode significar que os invasores podem até mesmo enviar arquivos para locais inesperados.
+
+A falta de verificação se o tamanho do arquivo está dentro dos limites esperados também pode possibilitar um tipo de ataque de negação de serviço (DoS), no qual o invasor preenche todo o espaço disponível em disco.
+
+Como surgem as vulnerabilidades no upload de arquivos?
+Considerando os perigos bastante óbvios, é raro encontrar sites na internet sem qualquer restrição quanto aos arquivos que os usuários podem enviar. Mais comumente, os desenvolvedores implementam o que consideram uma validação robusta, que ou é inerentemente falha ou pode ser facilmente contornada.
+
+Por exemplo, podem tentar criar listas negras de tipos de arquivos perigosos, mas não levam em conta as discrepâncias de análise ao verificar as extensões dos arquivos. Como em qualquer lista negra, também é fácil omitir acidentalmente tipos de arquivos mais obscuros que ainda podem ser perigosos.
+
+Em outros casos, o site pode tentar verificar o tipo de arquivo verificando propriedades que podem ser facilmente manipuladas por um invasor usando ferramentas como Burp Proxy ou Repeater.
+
+Em última análise, mesmo medidas de validação robustas podem ser aplicadas de forma inconsistente em toda a rede de hosts e diretórios que formam o site, resultando em discrepâncias que podem ser exploradas.
+
+Como os servidores web lidam com solicitações de arquivos estáticos?
+Antes de analisarmos como explorar vulnerabilidades de upload de arquivos, é importante que você tenha uma compreensão básica de como os servidores lidam com solicitações de arquivos estáticos.
+
+Historicamente, os sites consistiam quase inteiramente de arquivos estáticos que eram servidos aos usuários quando solicitados. Como resultado, o caminho de cada solicitação podia ser mapeado 1:1 com a hierarquia de diretórios e arquivos no sistema de arquivos do servidor. Hoje em dia, os sites são cada vez mais dinâmicos e o caminho de uma solicitação muitas vezes não tem nenhuma relação direta com o sistema de arquivos. Mesmo assim, os servidores web ainda lidam com solicitações de alguns arquivos estáticos, incluindo folhas de estilo, imagens e assim por diante.
+
+O processo para lidar com esses arquivos estáticos permanece praticamente o mesmo. Em algum momento, o servidor analisa o caminho na requisição para identificar a extensão do arquivo. Em seguida, usa essa informação para determinar o tipo do arquivo solicitado, geralmente comparando-o a uma lista de mapeamentos predefinidos entre extensões e tipos MIME. O que acontece a seguir depende do tipo de arquivo e da configuração do servidor.
+
+Se esse tipo de arquivo não for executável, como uma imagem ou uma página HTML estática, o servidor pode simplesmente enviar o conteúdo do arquivo para o cliente em uma resposta HTTP.
+Se o tipo de arquivo for executável, como um arquivo PHP, e o servidor estiver configurado para executar arquivos desse tipo, ele atribuirá variáveis ​​com base nos cabeçalhos e parâmetros da solicitação HTTP antes de executar o script. O resultado poderá então ser enviado ao cliente em uma resposta HTTP.
+Se o tipo de arquivo for executável, mas o servidor não estiver configurado para executar arquivos desse tipo, geralmente responderá com um erro. No entanto, em alguns casos, o conteúdo do arquivo ainda poderá ser enviado ao cliente como texto simples. Essas configurações incorretas podem ocasionalmente ser exploradas para vazar código-fonte e outras informações confidenciais. Você pode ver um exemplo disso em nossos materiais de aprendizagem sobre divulgação de informações.
+Dica
+Agora que você já está familiarizado com os conceitos-chave, vamos ver como você pode potencialmente explorar esses tipos de vulnerabilidades.
+
+Exploração de uploads de arquivos irrestritos para implantar um web shell.
+Do ponto de vista da segurança, o pior cenário possível é quando um site permite o upload de scripts do lado do servidor, como arquivos PHP, Java ou Python, e também está configurado para executá-los como código. Isso torna trivial a criação de um shell web personalizado no servidor.
+
+Web shell
+Um web shell é um script malicioso que permite a um atacante executar comandos arbitrários em um servidor web remoto, simplesmente enviando solicitações HTTP para o endpoint correto.
+
+Se você conseguir fazer o upload de um web shell com sucesso, terá controle total sobre o servidor. Isso significa que você pode ler e gravar arquivos arbitrários, exfiltrar dados confidenciais e até mesmo usar o servidor para direcionar ataques contra a infraestrutura interna e outros servidores fora da rede. Por exemplo, o seguinte comando PHP de uma linha poderia ser usado para ler arquivos arbitrários do sistema de arquivos do servidor:
+
+<?php echo file_get_contents('/path/to/target/file'); ?>
+Uma vez carregado, o envio de uma solicitação para este arquivo malicioso retornará o conteúdo do arquivo alvo na resposta.
+
+LAB
+APRENDIZ
+Execução remota de código via upload de web shell
+Não resolvido
+Um shell web mais versátil pode ter a seguinte aparência:
+
+<?php echo system($_GET['command']); ?>
+Este script permite que você passe um comando de sistema arbitrário por meio de um parâmetro de consulta, da seguinte forma:
+
+GET /example/exploit.php?command=id HTTP/1.1
+Exploração de falhas na validação de uploads de arquivos
+Na prática, é improvável que você encontre um site sem proteção contra ataques de upload de arquivos como os que vimos no laboratório anterior. Mas o fato de existirem defesas não significa que elas sejam robustas. Às vezes, ainda é possível explorar falhas nesses mecanismos para obter um shell web e executar código remotamente.
+
+Validação de tipo de arquivo com falha
+Ao enviar formulários HTML, o navegador normalmente envia os dados fornecidos em uma POSTsolicitação com o tipo de conteúdo `text` application/x-www-form-urlencoded. Isso é adequado para enviar textos simples, como seu nome ou endereço. No entanto, não é apropriado para enviar grandes quantidades de dados binários, como um arquivo de imagem inteiro ou um documento PDF. Nesse caso, o tipo de conteúdo `text` multipart/form-dataé o mais indicado.
+
+Considere um formulário contendo campos para o envio de uma imagem, uma descrição da mesma e o seu nome de usuário. O envio desse formulário pode resultar em uma requisição semelhante a esta:
+
+POST /images HTTP/1.1
+    Host: normal-website.com
+    Content-Length: 12345
+    Content-Type: multipart/form-data; boundary=---------------------------012345678901234567890123456
+
+    ---------------------------012345678901234567890123456
+    Content-Disposition: form-data; name="image"; filename="example.jpg"
+    Content-Type: image/jpeg
+
+    [...binary content of example.jpg...]
+
+    ---------------------------012345678901234567890123456
+    Content-Disposition: form-data; name="description"
+
+    This is an interesting description of my image.
+
+    ---------------------------012345678901234567890123456
+    Content-Disposition: form-data; name="username"
+
+    wiener
+    ---------------------------012345678901234567890123456--
+Como você pode ver, o corpo da mensagem é dividido em partes separadas para cada um dos campos de entrada do formulário. Cada parte contém um Content-Dispositioncabeçalho, que fornece algumas informações básicas sobre o campo de entrada ao qual se refere. Essas partes individuais também podem conter seus próprios Content-Typecabeçalhos, que informam ao servidor o tipo MIME dos dados enviados por meio desse campo de entrada.
+
+Uma das maneiras pelas quais os sites podem tentar validar o envio de arquivos é verificando se o Content-Typecabeçalho específico da entrada corresponde a um tipo MIME esperado. Se o servidor espera apenas arquivos de imagem, por exemplo, ele pode permitir apenas tipos como `image` image/jpege ` image/pngtext/image`. Problemas podem surgir quando o valor desse cabeçalho é implicitamente considerado confiável pelo servidor. Se nenhuma validação adicional for realizada para verificar se o conteúdo do arquivo realmente corresponde ao tipo MIME presumido, essa defesa pode ser facilmente contornada usando ferramentas como o Burp Repeater.
+
+LAB
+APRENDIZ
+Upload de web shell através da burla da restrição de Content-Type
+Não resolvido
+Impedir a execução de arquivos em diretórios acessíveis ao usuário.
+Embora seja claramente melhor impedir que tipos de arquivos perigosos sejam carregados em primeiro lugar, a segunda linha de defesa consiste em impedir que o servidor execute quaisquer scripts que consigam passar pelo sistema.
+
+Por precaução, os servidores geralmente executam apenas scripts cujo tipo MIME foi explicitamente configurado para eles. Caso contrário, podem simplesmente retornar algum tipo de mensagem de erro ou, em alguns casos, servir o conteúdo do arquivo como texto simples.
+
+GET /static/exploit.php?command=id HTTP/1.1
+    Host: normal-website.com
+
+
+    HTTP/1.1 200 OK
+    Content-Type: text/plain
+    Content-Length: 39
+
+    <?php echo system($_GET['command']); ?>
+Esse comportamento é potencialmente interessante por si só, pois pode fornecer uma maneira de vazar o código-fonte, mas anula qualquer tentativa de criar um shell web.
+
+Esse tipo de configuração geralmente varia entre diretórios. Um diretório para o qual arquivos fornecidos pelo usuário são enviados provavelmente terá controles muito mais rigorosos do que outros locais no sistema de arquivos que são considerados fora do alcance dos usuários finais. Se você conseguir encontrar uma maneira de enviar um script para um diretório diferente que não deveria conter arquivos fornecidos pelo usuário, o servidor poderá executar seu script, afinal.
+
+Dica
+LAB
+PRATICANTE
+Upload de shell web via travessia de diretório
+Não resolvido
+É importante observar também que, mesmo que você envie todas as suas solicitações para o mesmo nome de domínio, isso geralmente aponta para um servidor proxy reverso, como um balanceador de carga. Suas solicitações serão processadas por servidores adicionais nos bastidores, que também podem estar configurados de maneira diferente.
+
+Listas negras insuficientes para tipos de arquivos perigosos
+Uma das maneiras mais óbvias de impedir que os usuários carreguem scripts maliciosos é criar listas negras para extensões de arquivo potencialmente perigosas, como .pdf .php. A prática de criar listas negras é inerentemente falha, pois é difícil bloquear explicitamente todas as extensões de arquivo possíveis que poderiam ser usadas para executar código. Essas listas negras podem, às vezes, ser contornadas usando extensões de arquivo alternativas menos conhecidas que ainda podem ser executáveis, como .php5.txt .shtml, .pdf, etc.
+
+Substituindo a configuração do servidor
+Como discutimos na seção anterior, os servidores normalmente não executam arquivos a menos que tenham sido configurados para isso. Por exemplo, antes que um servidor Apache execute arquivos PHP solicitados por um cliente, os desenvolvedores podem precisar adicionar as seguintes diretivas ao seu /etc/apache2/apache2.confarquivo:
+
+LoadModule php_module /usr/lib/apache2/modules/libphp.so
+    AddType application/x-httpd-php .php
+Muitos servidores também permitem que os desenvolvedores criem arquivos de configuração especiais em diretórios individuais para substituir ou adicionar configurações a uma ou mais das configurações globais. Os servidores Apache, por exemplo, carregam uma configuração específica do diretório a partir de um arquivo chamado `.apache.conf`, .htaccesscaso exista.
+
+Da mesma forma, os desenvolvedores podem fazer configurações específicas de diretório em servidores IIS usando um web.configarquivo. Isso pode incluir diretivas como a seguinte, que neste caso permite que arquivos JSON sejam servidos aos usuários:
+
+<staticContent>
+    <mimeMap fileExtension=".json" mimeType="application/json" />
+    </staticContent>
+Os servidores web utilizam esses tipos de arquivos de configuração quando presentes, mas normalmente não é permitido acessá-los por meio de requisições HTTP. No entanto, ocasionalmente, você pode encontrar servidores que não impedem o envio de arquivos de configuração maliciosos. Nesse caso, mesmo que a extensão de arquivo necessária esteja na lista negra, você pode conseguir enganar o servidor para que ele mapeie uma extensão de arquivo personalizada e arbitrária para um tipo MIME executável.
+
+LAB
+PRATICANTE
+Upload de web shell via bypass de lista negra de extensões
+Não resolvido
+Ocultar extensões de arquivo
+Mesmo as listas negras mais abrangentes podem ser contornadas usando técnicas clássicas de ofuscação. Digamos que o código de validação seja sensível a maiúsculas e minúsculas e não reconheça que exploit.pHpse trata de um .phparquivo. Se o código que mapeia a extensão do arquivo para um tipo MIME não for sensível a maiúsculas e minúsculas, essa discrepância permite que arquivos PHP maliciosos passem pela validação e sejam executados pelo servidor.
+
+Você também pode obter resultados semelhantes utilizando as seguintes técnicas:
+
+Forneça várias extensões. Dependendo do algoritmo usado para analisar o nome do arquivo, o seguinte arquivo pode ser interpretado como um arquivo PHP ou uma imagem JPG:exploit.php.jpg
+Adicione caracteres finais. Alguns componentes removerão ou ignorarão espaços em branco, pontos e similares no final da linha:exploit.php.
+Tente usar a codificação de URL (ou codificação de URL dupla) para pontos, barras e barras invertidas. Se o valor não for decodificado ao validar a extensão do arquivo, mas for decodificado posteriormente no servidor, isso também pode permitir o envio de arquivos maliciosos que, de outra forma, seriam bloqueados.exploit%2Ephp
+Adicione ponto e vírgula ou caracteres de byte nulo codificados em URL antes da extensão do arquivo. Se a validação for escrita em uma linguagem de alto nível como PHP ou Java, mas o servidor processar o arquivo usando funções de baixo nível em C/C++, por exemplo, isso pode causar discrepâncias no que é tratado como o final do nome do arquivo exploit.asp;.jpg.exploit.asp%00.jpg
+Tente usar caracteres Unicode multibyte, que podem ser convertidos em bytes nulos e pontos após a conversão ou normalização Unicode. Sequências como `\n` xC0 x2E, `\n` xC4 xAEou `\n` xC0 xAEpodem ser traduzidas para ` x2E\n` se o nome do arquivo for analisado como uma string UTF-8, mas depois convertidas para caracteres ASCII antes de serem usadas em um caminho.
+Outras defesas envolvem a remoção ou substituição de extensões perigosas para impedir a execução do arquivo. Se essa transformação não for aplicada recursivamente, você pode posicionar a string proibida de forma que, ao removê-la, ainda permaneça uma extensão de arquivo válida. Por exemplo, considere o que acontece se você remover .phpa extensão do seguinte nome de arquivo:
+
+exploit.p.phphp
+Esta é apenas uma pequena seleção das muitas maneiras pelas quais é possível ofuscar extensões de arquivo.
+
+LAB
+PRATICANTE
+Upload via shell web através de extensão de arquivo ofuscada
+Não resolvido
+Validação falha do conteúdo do arquivo
+Em vez de confiar implicitamente no que Content-Typefoi especificado em uma solicitação, servidores mais seguros tentam verificar se o conteúdo do arquivo realmente corresponde ao esperado.
+
+No caso de uma função de upload de imagens, o servidor pode tentar verificar certas propriedades intrínsecas de uma imagem, como suas dimensões. Se você tentar enviar um script PHP, por exemplo, ele não terá dimensões. Portanto, o servidor pode deduzir que não se trata de uma imagem e rejeitar o upload.
+
+Da mesma forma, certos tipos de arquivo podem sempre conter uma sequência específica de bytes em seu cabeçalho ou rodapé. Esses bytes podem ser usados ​​como uma impressão digital ou assinatura para determinar se o conteúdo corresponde ao tipo esperado. Por exemplo, arquivos JPEG sempre começam com os bytes FF D8 FF.
+
+Esta é uma forma muito mais robusta de validar o tipo de arquivo, mas mesmo assim não é infalível. Usando ferramentas especiais, como o ExifTool, pode ser trivial criar um arquivo JPEG poliglota contendo código malicioso em seus metadados.
+
+LAB
+PRATICANTE
+Execução remota de código via upload de web shell poliglota
+Não resolvido
+Explorando condições de corrida no upload de arquivos
+Os frameworks modernos são mais resistentes a esse tipo de ataque. Geralmente, eles não enviam arquivos diretamente para o destino final no sistema de arquivos. Em vez disso, tomam precauções como enviar o arquivo primeiro para um diretório temporário isolado (sandbox) e randomizar o nome para evitar sobrescrever arquivos existentes. Em seguida, realizam a validação desse arquivo temporário e só o transferem para o destino final quando consideram que é seguro fazê-lo.
+
+Dito isso, os desenvolvedores às vezes implementam seu próprio processamento de uploads de arquivos independentemente de qualquer framework. Além de ser bastante complexo de se fazer bem, isso também pode introduzir condições de corrida perigosas que permitem a um atacante contornar completamente até mesmo a validação mais robusta.
+
+Por exemplo, alguns sites carregam o arquivo diretamente para o sistema de arquivos principal e o removem caso ele não passe na validação. Esse tipo de comportamento é típico em sites que dependem de softwares antivírus e similares para verificar a presença de malware. Isso pode levar apenas alguns milissegundos, mas durante o curto período em que o arquivo permanece no servidor, o invasor ainda pode executá-lo.
+
+Essas vulnerabilidades costumam ser extremamente sutis, o que dificulta sua detecção durante os testes de caixa-preta, a menos que se consiga encontrar uma maneira de vazar o código-fonte relevante.
+
+LAB
+ESPECIALISTA
+Upload de shell web via condição de corrida
+Não resolvido
+Condições de corrida em uploads de arquivos baseados em URL
+Condições de corrida semelhantes podem ocorrer em funções que permitem o envio de um arquivo por meio de uma URL. Nesse caso, o servidor precisa buscar o arquivo na internet e criar uma cópia local antes de poder realizar qualquer validação.
+
+Como o arquivo é carregado usando HTTP, os desenvolvedores não podem usar os mecanismos integrados de seus frameworks para validar arquivos com segurança. Em vez disso, eles podem criar manualmente seus próprios processos para armazenar e validar o arquivo temporariamente, o que pode não ser tão seguro.
+
+Por exemplo, se o arquivo for carregado em um diretório temporário com um nome aleatório, em teoria, seria impossível para um atacante explorar qualquer condição de corrida. Se ele não souber o nome do diretório, não poderá solicitar o arquivo para acionar sua execução. Por outro lado, se o nome do diretório aleatório for gerado usando funções pseudoaleatórias como a função `__random__` do PHP uniqid(), ele poderá ser descoberto por força bruta.
+
+Para facilitar ataques como esse, você pode tentar prolongar o tempo de processamento do arquivo, aumentando assim a janela para realizar um ataque de força bruta no nome do diretório. Uma maneira de fazer isso é enviando um arquivo maior. Se ele for processado em partes, você pode potencialmente se aproveitar disso criando um arquivo malicioso com o payload no início, seguido por um grande número de bytes de preenchimento arbitrários.
+
+Explorando vulnerabilidades de upload de arquivos sem execução remota de código.
+Nos exemplos que analisamos até agora, conseguimos enviar scripts do lado do servidor para execução remota de código. Essa é a consequência mais grave de uma função de upload de arquivos insegura, mas essas vulnerabilidades ainda podem ser exploradas de outras maneiras.
+
+Carregar scripts maliciosos do lado do cliente
+Embora você possa não conseguir executar scripts no servidor, ainda poderá enviar scripts para ataques do lado do cliente. Por exemplo, se você puder enviar arquivos HTML ou imagens SVG, poderá usar <script>tags para criar payloads XSS armazenados.
+
+Se o arquivo carregado aparecer em uma página visitada por outros usuários, o navegador deles executará o script ao tentar renderizar a página. Observe que, devido às restrições da política de mesma origem, esse tipo de ataque só funcionará se o arquivo carregado for servido da mesma origem para a qual você o carregou.
+
+Exploração de vulnerabilidades na análise de arquivos enviados
+Se o arquivo carregado parecer estar armazenado e servido de forma segura, o último recurso é tentar explorar vulnerabilidades específicas da análise ou processamento de diferentes formatos de arquivo. Por exemplo, se você sabe que o servidor analisa arquivos baseados em XML, como arquivos do Microsoft Office .doc, .xlsisso pode ser um vetor potencial para ataques de injeção XXE.
+
+Envio de arquivos usando o método PUT
+Vale ressaltar que alguns servidores web podem ser configurados para suportar PUTsolicitações. Se as defesas apropriadas não estiverem em vigor, isso pode fornecer um meio alternativo de enviar arquivos maliciosos, mesmo quando uma função de upload não estiver disponível na interface web.
+
+PUT /images/exploit.php HTTP/1.1
+Host: vulnerable-website.com
+Content-Type: application/x-httpd-php
+Content-Length: 49
+
+<?php echo file_get_contents('/path/to/file'); ?>
+Dica
+Você pode tentar enviar OPTIONSsolicitações para diferentes endpoints para testar se algum deles oferece suporte ao PUTmétodo.
+
+Como prevenir vulnerabilidades no upload de arquivos
+Permitir que os usuários carreguem arquivos é uma prática comum e não precisa ser perigosa, desde que você tome as precauções corretas. Em geral, a maneira mais eficaz de proteger seus sites contra essas vulnerabilidades é implementar todas as seguintes práticas:
+
+Verifique a extensão do arquivo em uma lista de extensões permitidas, em vez de uma lista de extensões proibidas. É muito mais fácil adivinhar quais extensões você pode querer permitir do que adivinhar quais um invasor pode tentar enviar.
+Certifique-se de que o nome do arquivo não contenha nenhuma substring que possa ser interpretada como um diretório ou uma sequência de percurso ( ../).
+Renomeie os arquivos enviados para evitar conflitos que possam sobrescrever arquivos existentes.
+Não envie arquivos para o sistema de arquivos permanente do servidor até que eles tenham sido totalmente validados.
+Sempre que possível, utilize uma estrutura já estabelecida para o pré-processamento de arquivos enviados, em vez de tentar criar seus próprios mecanismos de validação.

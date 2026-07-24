@@ -1,14 +1,64 @@
-# Cache//Lab — Plano do sistema de estudos BSCP
+# BSCP//Forge — Plano do sistema de estudos
 
 ## 1. Visão do projeto
 
-O Cache//Lab é uma plataforma local, interativa e modular para preparar o estudo da certificação BSCP. O sistema transforma conteúdos teóricos de segurança web em uma trilha prática, com explicações progressivas, exemplos de requisições HTTP e mini laboratórios resolvidos com o Burp Suite.
+O BSCP//Forge é uma plataforma local, interativa e modular para preparar o estudo da certificação BSCP. O sistema transforma conteúdos teóricos de segurança web em uma trilha prática, com explicações progressivas, exemplos de requisições HTTP e mini laboratórios resolvidos com o Burp Suite.
 
-O primeiro módulo é **Web Cache Deception**. O segundo módulo implementado é **Ataques de Web LLM**. Outros módulos, como SQL Injection, XSS, SSRF, OAuth e HTTP Request Smuggling, poderão ser adicionados sem reescrever a plataforma.
+A versão atual contém **Web Cache Deception**, **Ataques de Web LLM**, **Vulnerabilidades de Autenticação**, **Path Traversal**, **OS Command Injection**, **Vulnerabilidades na Lógica de Negócios**, **Teste de API**, **Vulnerabilidades de Divulgação de Informações**, **Vulnerabilidades de Controle de Acesso e Escalonamento de Privilégios**, **Vulnerabilidades no Upload de Arquivos** e **Injeção NoSQL**. São 57 trilhas e 285 laboratórios comportamentais. Outros módulos, como SQL Injection, XSS, SSRF, OAuth e HTTP Request Smuggling, poderão ser adicionados sem reescrever a plataforma.
+
+## Module 04 — Path Traversal
+
+O módulo possui cinco trilhas e 25 labs sobre traversal básico, caminhos absolutos, remoção não recursiva, encoding, validação de diretório base e bypass de extensão com null byte.
+
+## Módulo 05 — OS Command Injection
+
+O conteúdo integral está em `burp/CommandInjection.txt`. O módulo possui cinco trilhas e 25 labs sobre saída direta, detecção cega por tempo, redirecionamento de saída, interação OAST e exfiltração virtual. Cada lab é um mini site da loja fictícia ForgeSupply e produz tráfego local interceptável pelo Burp.
+
+O motor interpreta apenas uma gramática educacional restrita. Comandos, relógio, arquivos, processos, DNS e rede são objetos virtuais mantidos em memória; nenhum comando do sistema operacional é executado. O vídeo fornecido pelo estudante aparece ao fim da trilha como link explícito e não é carregado automaticamente.
+
+## Módulo 06 — Vulnerabilidades na Lógica de Negócios
+
+O conteúdo integral está em `burp/regadenogocio.txt`. O módulo possui cinco trilhas e 25 labs sobre confiança excessiva no cliente, entradas incomuns, sequência de etapas, validação inconsistente entre canais e abuso de regras específicas do domínio.
+
+Cada lab abre o marketplace fictício LoopMarket. Pedidos, saldos, descontos, cupons, pontos e gift cards ficam isolados em memória por laboratório. O motor registra premissa, decisão, transição e efeito observável sem movimentar dinheiro ou chamar qualquer serviço externo.
+
+## Módulo 07 — Teste de API
+
+O conteúdo integral está em `burp/testedeapi.txt`. O módulo possui cinco trilhas e 25 labs sobre reconhecimento e documentação, métodos e tipos de conteúdo, parâmetros ocultos, atribuição em massa e poluição de parâmetros no servidor.
+
+Cada lab abre o portal fictício AtlasAPI, com explorador de requisições, verbos HTTP, formatos e console de resposta. Contratos, endpoints, registros e requisições internas são objetos locais e determinísticos. A atribuição em massa exige alteração seguida de leitura do recurso; a poluição de parâmetros mostra a requisição interna construída, mas nunca inicia uma conexão.
+
+## Módulo 08 — Vulnerabilidades de Divulgação de Informações
+
+O conteúdo integral está em `burp/vulnerabilidadesdedivulgaçãodeinformações.txt`. O módulo possui cinco trilhas e 25 labs sobre artefatos públicos, mensagens de erro, depuração e configuração, dados de contas, arquivos de backup e histórico de versão.
+
+Cada lab abre o BeaconPortal e gera respostas interceptáveis pelo Burp. Robots, sitemaps, stack traces, contas, backups e objetos Git pertencem a mapas fechados em memória. O motor nunca enumera alvos externos, lê o filesystem real nem utiliza segredos verdadeiros.
+
+## Módulo 09 — Vulnerabilidades de Controle de Acesso e Escalonamento de Privilégios
+
+O conteúdo integral está em `burp/Access controlvulnerabilitiesandprivilegeescalation.txt`. O módulo possui cinco trilhas e 25 labs sobre escalonamento vertical, discrepâncias de rota e método, escalonamento horizontal, referências diretas a objetos e controles dependentes de contexto.
+
+Cada lab abre o workspace fictício Gatehouse. Identidades, funções, contas, registros, downloads, projetos, etapas e decisões de autorização são objetos locais mantidos em memória. O motor não consulta diretórios, provedores de identidade, arquivos ou mecanismos de autorização reais.
+
+## Módulo 10 — Vulnerabilidades no Upload de Arquivos
+
+O conteúdo integral está em `burp/Vulnerabilidadesnouploaddearquivos.txt`. O módulo possui cinco trilhas e 25 labs sobre interpretação de uploads, confiança em tipo declarado e destino, extensões e regras de configuração, conteúdo e processamento, métodos alternativos, corridas e impacto sobre disponibilidade.
+
+Cada lab abre a biblioteca fictícia FrameVault. Arquivos, diretórios, handlers, parsers, objetos temporários, quotas e saídas existem apenas em mapas fechados em memória. O motor não lê nem grava o filesystem real, não executa código ou JavaScript, não abre documentos em parsers reais e não faz importações de rede.
+
+## Módulo 11 — Injeção NoSQL
+
+O conteúdo integral está em `burp/injeçãoNoSQL.txt`. O módulo possui cinco trilhas e 25 labs sobre injeção de sintaxe, respostas Booleanas, terminadores, operadores em autenticação, inferência de campos e valores e detecção por tempo.
+
+Cada lab abre o catálogo documental fictício QueryNest. Produtos, usuários, campos e marcadores pertencem a coleções fechadas em memória. O motor aceita somente predicados declarativos conhecidos; não consulta banco NoSQL, não usa `eval`, não executa JavaScript ou regex arbitrária e representa atrasos apenas como valores na resposta.
+
+## Módulo 03 — Vulnerabilidades de Autenticação
+
+O módulo possui cinco trilhas e 25 labs sobre enumeração de usuários, força bruta e proteções falhas, autenticação multifator, sessões persistentes e recuperação ou alteração de senha. Os cenários usam somente contas e credenciais fictícias locais.
 
 ## Módulo 02 — Ataques de Web LLM
 
-O conteúdo integral está em `burpLLM.txt` e possui quatro trilhas práticas, com cinco labs cada:
+O conteúdo integral está em `burp/burpLLM.txt` e possui quatro trilhas práticas, com cinco labs cada:
 
 - Agência excessiva em APIs LLM — descoberta de ferramentas, funções e permissões.
 - Encadeamento de vulnerabilidades — uso do modelo como ponte para path traversal, SQLi e outras falhas clássicas.
@@ -68,6 +118,8 @@ O módulo inicial contém oito trilhas, com cinco labs cada, totalizando 40 desa
 
 Todo lab deve possuir:
 
+- Mini site navegável em uma URL própria.
+- Interface contextual com formulários que geram tráfego interceptável no Burp.
 - Título e nível de dificuldade.
 - Objetivo claro.
 - Contexto do cenário.
@@ -118,7 +170,9 @@ Nos labs de exploração, o estudante deve:
 
 - HTML, CSS e JavaScript sem dependências obrigatórias.
 - Dashboard, trilha didática, labs, conteúdo original e caderno.
-- Layout responsivo para desktop e notebook.
+- Mini sites orientados por dados para cache, LLM, autenticação, Path Traversal, Command Injection, Lógica de Negócios, Teste de API, Divulgação de Informações e Controle de Acesso.
+- Console local de requisição e resposta que complementa, sem substituir, a observação pelo Burp Suite.
+- Layout responsivo para desktop, notebook e celular, com foco visível, regiões nomeadas, estado ARIA e navegação por teclado.
 - Estado de progresso atualizado pela API.
 
 ### Backend
@@ -128,7 +182,9 @@ Nos labs de exploração, o estudante deve:
 - API de catálogo, progresso e conteúdo original.
 - Cache simulado em memória.
 - Rotas vulneráveis isoladas por lab.
-- Validação automática baseada no comportamento observado.
+- Motores stateful em `lib/lab-simulator.js` para LLM, autenticação, Path Traversal, OS Command Injection, Lógica de Negócios, Teste de API, Divulgação de Informações, Controle de Acesso, Upload de Arquivos e Injeção NoSQL.
+- Validação automática baseada no comportamento observado, sem palavras-gatilho.
+- Limites de corpo, erros JSON controlados e headers de segurança nas respostas.
 
 ### Segurança do ambiente
 
@@ -137,6 +193,20 @@ Nos labs de exploração, o estudante deve:
 - Dados fictícios de vítima.
 - Cache resetável.
 - Labs independentes entre si.
+- Nenhuma chamada LLM ou rede externa, execução de JavaScript hostil, comando do sistema operacional, acesso ao sistema de arquivos real, processamento real de uploads, transação comercial ou consulta a um sistema de autorização real.
+
+### Contratos atuais
+
+- `/api/course` publica o catálogo sem `solutionPayload`.
+- `/api/progress` consulta o progresso persistido; `/api/progress/reset` o remove.
+- `/api/labs/reset` limpa cache, sessões, contadores e estados efêmeros.
+- `/api/content/original` entrega apenas os onze materiais locais permitidos.
+- `/api/labs/hints` libera dicas progressivamente; `/api/labs/result` entrega a solução somente depois da conclusão.
+- `/api/quiz/answer`, `/api/exam/submit` e `/api/final-challenge/submit` validam os recursos de aprendizagem.
+- `/site/<lab-id>` abre a aplicação navegável correspondente a cada um dos 285 labs.
+- `/lab`, `/llm`, `/auth`, `/path`, `/cmd`, `/logic`, `/api-lab`, `/info`, `/access`, `/upload` e `/nosql` expõem os onze motores de treinamento.
+
+A matriz completa de conceito, comportamento, evidência e defesa está em `MATRIZ_DOS_LABS.md`.
 
 ## 8. Experiência de estudo
 
@@ -180,31 +250,31 @@ Cada lab deve ser descrito por dados, e não espalhado pela interface. Assim ser
 
 ### Fase 2 — Aprendizagem
 
-- Quiz por seção.
-- Revisão de erros.
-- Checklist interativo.
-- Relatório de exploração ao terminar cada lab.
-- Desafio final do módulo.
+- [x] Quiz por seção.
+- [x] Revisão de erros.
+- [x] Checklist interativo.
+- [x] Relatório de exploração ao terminar cada lab.
+- [x] Desafio final do módulo.
 
 ### Fase 3 — Expansão BSCP
+
+**Parcialmente adiada por decisão do desenvolvedor.** OS Command Injection, Lógica de Negócios, Teste de API, Divulgação de Informações, Controle de Acesso, Upload de Arquivos e Injeção NoSQL foram implementados após o fornecimento dos respectivos materiais na pasta `burp`. Os módulos abaixo somente serão iniciados quando o conteúdo real de referência correspondente for fornecido.
 
 - SQL Injection.
 - XSS.
 - SSRF.
 - OAuth.
 - HTTP Request Smuggling.
-- Access Control.
-- API testing.
 - Web cache poisoning.
 
 ### Fase 4 — Recursos avançados
 
-- Perfis de dificuldade.
-- Banco de questões.
-- Modo simulado de prova.
-- Métricas por técnica.
-- Exportação de relatório.
-- Sistema de plugins para módulos futuros.
+- [x] Perfis de dificuldade.
+- [x] Banco de questões.
+- [x] Modo simulado de prova.
+- [x] Métricas por técnica.
+- [x] Exportação de relatório.
+- [x] Sistema local de plugins para módulos futuros.
 
 ## 11. Critério de qualidade de um novo módulo
 
@@ -230,3 +300,9 @@ Observar → Formular hipótese → Testar → Comparar respostas → Explorar �
 ```
 
 O objetivo não é apenas encontrar uma flag. É fazer o estudante conseguir explicar por que a vulnerabilidade existe, como ela foi comprovada e como seria corrigida em uma aplicação real.
+
+## 13. Estado de validação
+
+A suíte integrada resolve os 285 labs por comportamento e cobre fluxos negativos, cookies e transições de MFA, rate limit vinculado ao IP, lockout, arrays, cookies persistentes, tokens de uso único, caminhos canônicos, comandos, transações, métodos HTTP, tipos de conteúdo, binding de objetos, respostas diferenciais, artefatos, requisições internas virtuais, identidade, propriedade, rotas, contexto, nomes de upload, MIME, extensões, processamento, objetos temporários, quota, predicados NoSQL declarativos, descoberta de campos, prefixos e tempo simulado, além de cache privado, múltiplas chaves, operações LLM inválidas, entradas malformadas, headers, persistência e reset. Também abre os 285 mini sites, valida o formulário de cada módulo, o isolamento de mesma origem e a proteção das soluções, além de dicas progressivas, quiz, simulado, desafios finais e o registro local de plugins. Os testes confirmam que processos, arquivos, parsers, execução, bancos, rede, dinheiro, serviços, contratos, contas, backups, segredos, histórico e decisões de autorização usados nos cenários permanecem falsos ou em memória. A interface é verificada em desktop e largura móvel, incluindo filtros, aulas, aprendizagem, métricas, conteúdo original, busca, caderno, modal, foco, aplicações e console.
+
+Os mini sites e simuladores continuam sendo abstrações didáticas locais. Cache, sessões, contadores e tokens efêmeros ficam em memória; somente o progresso é persistido. Eles não devem ser publicados nem usados como substitutos exatos de produtos reais.

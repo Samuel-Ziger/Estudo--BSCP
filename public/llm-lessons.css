@@ -1,0 +1,8 @@
+.tool-flow { display:grid; grid-template-columns:repeat(5,1fr); gap:8px; padding:0; margin:22px 0; list-style:none }
+.tool-flow li { border:1px solid var(--line); padding:14px; font-size:12px; line-height:1.45 }
+.tool-flow span { display:block; color:var(--cyan); font:600 11px 'IBM Plex Mono'; margin-bottom:8px }
+.llm-vectors { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:22px 0 }
+.llm-vectors article { border:1px solid var(--line); background:rgba(199,166,255,.035); padding:16px }
+.llm-vectors code { color:#c7a6ff; font:600 11px 'IBM Plex Mono' }
+.llm-vectors p { margin:8px 0 0; font-size:13px }
+@media(max-width:700px) { .tool-flow { grid-template-columns:1fr 1fr } .llm-vectors { grid-template-columns:1fr } }

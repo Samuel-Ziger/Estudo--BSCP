@@ -1,0 +1,236 @@
+Vulnerabilidades de controle de acesso e escalonamento de privilégios
+Nesta seção, descrevemos:
+
+Escalada de privilégios.
+Os tipos de vulnerabilidades que podem surgir com o controle de acesso.
+Como prevenir vulnerabilidades no controle de acesso.
+Laboratórios
+Se você já conhece os conceitos básicos por trás das vulnerabilidades de controle de acesso e deseja praticar a exploração delas em alvos realistas e deliberadamente vulneráveis, pode acessar os laboratórios sobre este tópico no link abaixo.
+
+Veja todos os laboratórios de controle de acesso
+O que é controle de acesso?
+O controle de acesso consiste na aplicação de restrições sobre quem ou o que está autorizado a executar ações ou acessar recursos. No contexto de aplicações web, o controle de acesso depende da autenticação e do gerenciamento de sessões.
+
+A autenticação confirma que o usuário é quem diz ser.
+O gerenciamento de sessão identifica quais solicitações HTTP subsequentes estão sendo feitas pelo mesmo usuário.
+O controle de acesso determina se o usuário tem permissão para realizar a ação que está tentando executar.
+Controles de acesso falhos são comuns e frequentemente representam uma vulnerabilidade crítica de segurança. O projeto e o gerenciamento de controles de acesso são problemas complexos e dinâmicos que aplicam restrições comerciais, organizacionais e legais a uma implementação técnica. As decisões de projeto de controle de acesso precisam ser tomadas por humanos, portanto, o potencial para erros é alto.
+
+Vulnerabilidade no controle de acesso
+Leia mais
+modelos de segurança de controle de acesso
+controles de acesso vertical
+Os controles de acesso vertical são mecanismos que restringem o acesso a funcionalidades sensíveis a tipos específicos de usuários.
+
+Com controles de acesso vertical, diferentes tipos de usuários têm acesso a diferentes funções do aplicativo. Por exemplo, um administrador pode modificar ou excluir a conta de qualquer usuário, enquanto um usuário comum não tem acesso a essas ações. Os controles de acesso vertical podem ser implementações mais refinadas de modelos de segurança projetados para aplicar políticas de negócios, como a separação de funções e o princípio do menor privilégio.
+
+controles de acesso horizontal
+Os controles de acesso horizontal são mecanismos que restringem o acesso a recursos a usuários específicos.
+
+Com controles de acesso horizontal, diferentes usuários têm acesso a um subconjunto de recursos do mesmo tipo. Por exemplo, um aplicativo bancário permitirá que um usuário visualize transações e faça pagamentos de suas próprias contas, mas não das contas de outros usuários.
+
+Controles de acesso dependentes do contexto
+Os controles de acesso dependentes do contexto restringem o acesso a funcionalidades e recursos com base no estado da aplicação ou na interação do usuário com ela.
+
+Os controles de acesso dependentes do contexto impedem que um usuário execute ações na ordem errada. Por exemplo, um site de varejo pode impedir que os usuários modifiquem o conteúdo do carrinho de compras após terem efetuado o pagamento.
+
+Exemplos de controles de acesso quebrados
+Vulnerabilidades de controle de acesso falhas existem quando um usuário consegue acessar recursos ou executar ações que não deveria ser capaz de fazer.
+
+Escalada vertical de privilégios
+Se um usuário consegue acessar uma funcionalidade à qual não tem permissão, isso configura uma escalada vertical de privilégios. Por exemplo, se um usuário sem privilégios administrativos consegue acessar uma página administrativa onde pode excluir contas de usuário, isso é um exemplo de escalada vertical de privilégios.
+
+Funcionalidade desprotegida
+Em sua forma mais básica, a escalada vertical de privilégios ocorre quando um aplicativo não impõe nenhuma proteção para funcionalidades sensíveis. Por exemplo, funções administrativas podem estar acessíveis a partir da página inicial do administrador, mas não da página inicial do usuário. No entanto, um usuário pode conseguir acessar as funções administrativas navegando até a URL administrativa correspondente.
+
+Por exemplo, um site pode hospedar funcionalidades sensíveis no seguinte URL:
+
+https://insecure-website.com/admin
+Isso pode ser acessível a qualquer usuário, não apenas a usuários administrativos que possuem um link para a funcionalidade em sua interface de usuário. Em alguns casos, a URL administrativa pode ser divulgada em outros locais, como no robots.txtarquivo:
+
+https://insecure-website.com/robots.txt
+Mesmo que a URL não seja divulgada em lugar nenhum, um atacante pode ser capaz de usar uma lista de palavras para realizar um ataque de força bruta e descobrir a localização da funcionalidade sensível.
+
+LAB
+APRENDIZ
+Funcionalidade administrativa desprotegida
+Não resolvido
+Em alguns casos, funcionalidades sensíveis são ocultadas através de URLs menos previsíveis. Este é um exemplo da chamada "segurança por obscuridade". No entanto, ocultar funcionalidades sensíveis não proporciona um controle de acesso eficaz, pois os usuários podem descobrir a URL ofuscada de diversas maneiras.
+
+Imagine uma aplicação que hospeda funções administrativas no seguinte URL:
+
+https://insecure-website.com/administrator-panel-yb556
+Isso pode não ser diretamente previsível para um atacante. No entanto, o aplicativo ainda pode vazar a URL para os usuários. A URL pode ser divulgada em JavaScript, que constrói a interface do usuário com base na função do usuário.
+
+<script>
+	var isAdmin = false;
+	if (isAdmin) {
+		...
+		var adminPanelTag = document.createElement('a');
+		adminPanelTag.setAttribute('href', 'https://insecure-website.com/administrator-panel-yb556');
+		adminPanelTag.innerText = 'Admin panel';
+		...
+	}
+</script>
+Este script adiciona um link à interface do usuário se ele for um administrador. No entanto, o script que contém a URL fica visível para todos os usuários, independentemente de sua função.
+
+LAB
+APRENDIZ
+Funcionalidade administrativa desprotegida com URL imprevisível
+Não resolvido
+Métodos de controle de acesso baseados em parâmetros
+Algumas aplicações determinam os direitos de acesso ou a função do usuário no momento do login e, em seguida, armazenam essas informações em um local controlável pelo usuário. Isso pode ser:
+
+Um campo oculto.
+Um biscoito.
+Um parâmetro de string de consulta predefinido.
+O aplicativo toma decisões de controle de acesso com base no valor enviado. Por exemplo:
+
+https://insecure-website.com/login/home.jsp?admin=true
+https://insecure-website.com/login/home.jsp?role=1
+Essa abordagem é insegura porque um usuário pode modificar o valor e acessar funcionalidades para as quais não está autorizado, como funções administrativas.
+
+LAB
+APRENDIZ
+A função do usuário é controlada pelo parâmetro de solicitação.
+Não resolvido
+LAB
+APRENDIZ
+A função do usuário pode ser modificada no perfil do usuário.
+Não resolvido
+Controle de acesso comprometido resultante de configuração incorreta da plataforma.
+Algumas aplicações aplicam controles de acesso na camada da plataforma. Elas fazem isso restringindo o acesso a URLs e métodos HTTP específicos com base na função do usuário. Por exemplo, uma aplicação pode configurar uma regra da seguinte forma:
+
+DENY: POST, /admin/deleteUser, managers
+Esta regra nega o acesso ao POSTmétodo no URL /admin/deleteUserpara usuários do grupo de gerentes. Diversas coisas podem dar errado nessa situação, levando a violações do controle de acesso.
+
+Algumas estruturas de aplicativos suportam vários cabeçalhos HTTP não padronizados que podem ser usados ​​para sobrescrever a URL na solicitação original, como ` X-Original-URLurl` e `url` X-Rewrite-URL. Se um site usa controles rigorosos de front-end para restringir o acesso com base na URL, mas o aplicativo permite que a URL seja sobrescrita por meio de um cabeçalho de solicitação, então pode ser possível contornar os controles de acesso usando uma solicitação como a seguinte:
+
+POST / HTTP/1.1
+X-Original-URL: /admin/deleteUser
+...
+LAB
+PRATICANTE
+O controle de acesso baseado em URL pode ser burlado.
+Não resolvido
+Um ataque alternativo relaciona-se ao método HTTP usado na requisição. Os controles de front-end descritos nas seções anteriores restringem o acesso com base na URL e no método HTTP. Alguns sites toleram diferentes métodos de requisição HTTP ao executar uma ação. Se um atacante puder usar o GETmétodo HTTP (ou outro) para executar ações em uma URL restrita, ele poderá burlar o controle de acesso implementado na camada da plataforma.
+
+LAB
+PRATICANTE
+O controle de acesso baseado em métodos pode ser burlado.
+Não resolvido
+Controle de acesso comprometido devido a discrepâncias na correspondência de URLs.
+Os sites podem variar na rigidez com que correspondem o caminho de uma solicitação recebida a um endpoint definido. Por exemplo, podem tolerar inconsistências no uso de maiúsculas e minúsculas, de modo que uma solicitação para `/` /ADMIN/DELETEUSERainda pode ser mapeada para o /admin/deleteUserendpoint `/`. Se o mecanismo de controle de acesso for menos tolerante, poderá tratar esses endpoints como dois diferentes e, consequentemente, não aplicar as restrições corretas.
+
+Discrepâncias semelhantes podem surgir se os desenvolvedores que utilizam o framework Spring tiverem habilitado a useSuffixPatternMatchopção. Isso permite que caminhos com qualquer extensão de arquivo sejam mapeados para um endpoint equivalente sem extensão de arquivo. Em outras palavras, uma requisição para `/path/ /admin/deleteUser.anythingto /admin/deleteUser...
+
+Em outros sistemas, você pode encontrar discrepâncias quanto /admin/deleteUserao /admin/deleteUser/tratamento de endpoints distintos, como `/` e `/`. Nesse caso, você pode conseguir contornar os controles de acesso adicionando uma barra invertida ao final do caminho.
+
+Escalada horizontal de privilégios
+A escalada horizontal de privilégios ocorre quando um usuário consegue acessar recursos pertencentes a outro usuário, em vez de seus próprios recursos do mesmo tipo. Por exemplo, se um funcionário consegue acessar os registros de outros funcionários, além dos seus próprios, isso configura uma escalada horizontal de privilégios.
+
+Ataques de escalonamento horizontal de privilégios podem usar métodos de exploração semelhantes aos de escalonamento vertical de privilégios. Por exemplo, um usuário pode acessar a página da sua própria conta usando a seguinte URL:
+
+https://insecure-website.com/myaccount?id=123
+Se um atacante modificar o idvalor do parâmetro para o de outro usuário, ele poderá obter acesso à página da conta desse outro usuário, bem como aos dados e funções associados.
+
+Observação
+Este é um exemplo de uma vulnerabilidade de referência direta a objetos insegura (IDOR). Esse tipo de vulnerabilidade surge quando valores de parâmetros do controlador do usuário são usados ​​para acessar recursos ou funções diretamente.
+
+LAB
+APRENDIZ
+ID do usuário controlado por parâmetro de solicitação
+Não resolvido
+Em algumas aplicações, o parâmetro explorável não possui um valor previsível. Por exemplo, em vez de um número sequencial, uma aplicação pode usar identificadores únicos globais (GUIDs) para identificar usuários. Isso pode impedir que um atacante adivinhe ou preveja o identificador de outro usuário. No entanto, os GUIDs pertencentes a outros usuários podem ser divulgados em outras partes da aplicação onde os usuários são referenciados, como em mensagens ou avaliações de usuários.
+
+LAB
+APRENDIZ
+O ID do usuário é controlado por um parâmetro da requisição, resultando em IDs de usuário imprevisíveis.
+Não resolvido
+Em alguns casos, um aplicativo detecta quando o usuário não tem permissão para acessar o recurso e retorna um redirecionamento para a página de login. No entanto, a resposta contendo o redirecionamento ainda pode incluir dados confidenciais do usuário visado, de modo que o ataque ainda é bem-sucedido.
+
+LAB
+APRENDIZ
+ID do usuário controlado por parâmetro de requisição com vazamento de dados no redirecionamento
+Não resolvido
+Escalada de privilégios horizontal para vertical
+Frequentemente, um ataque de escalonamento horizontal de privilégios pode ser transformado em um ataque de escalonamento vertical, comprometendo um usuário com mais privilégios. Por exemplo, um escalonamento horizontal pode permitir que um atacante redefina ou capture a senha de outro usuário. Se o atacante tiver como alvo um usuário administrativo e comprometer sua conta, ele poderá obter acesso administrativo e, assim, realizar um escalonamento vertical de privilégios.
+
+Um atacante pode conseguir acesso à página da conta de outro usuário utilizando a técnica de adulteração de parâmetros já descrita para escalonamento horizontal de privilégios:
+
+https://insecure-website.com/myaccount?id=456
+Se o usuário alvo for um administrador do aplicativo, o invasor obterá acesso à página da conta administrativa. Essa página pode revelar a senha do administrador, fornecer um meio de alterá-la ou conceder acesso direto a funcionalidades privilegiadas.
+
+LAB
+APRENDIZ
+ID de usuário controlado por parâmetro de requisição com divulgação de senha
+Não resolvido
+Referências diretas a objetos inseguras
+Referências diretas inseguras a objetos (IDORs, na sigla em inglês) são uma subcategoria de vulnerabilidades de controle de acesso. IDORs ocorrem quando um aplicativo usa entradas fornecidas pelo usuário para acessar objetos diretamente e um invasor consegue modificar essas entradas para obter acesso não autorizado. A vulnerabilidade ganhou popularidade após sua inclusão na lista OWASP Top Ten de 2007. Este é apenas um exemplo entre muitos erros de implementação que podem fornecer uma maneira de burlar os controles de acesso.
+
+LAB
+APRENDIZ
+Referências diretas a objetos inseguras
+Não resolvido
+Leia mais
+Referências diretas inseguras a objetos (IDOR)
+Vulnerabilidades de controle de acesso em processos de múltiplas etapas
+Muitos sites implementam funções importantes em uma série de etapas. Isso é comum quando:
+
+É necessário capturar uma variedade de entradas ou opções.
+O usuário precisa revisar e confirmar os detalhes antes que a ação seja executada.
+Por exemplo, a função administrativa para atualizar os dados do usuário pode envolver os seguintes passos:
+
+Carregue o formulário que contém os detalhes de um usuário específico.
+Envie as alterações.
+Analise as alterações e confirme.
+Às vezes, um site implementa controles de acesso rigorosos em algumas dessas etapas, mas ignora outras. Imagine um site onde os controles de acesso são aplicados corretamente à primeira e à segunda etapas, mas não à terceira. O site pressupõe que um usuário só chegará à etapa 3 se já tiver concluído as primeiras etapas, que são devidamente controladas. Um invasor pode obter acesso não autorizado à função ignorando as duas primeiras etapas e enviando diretamente a solicitação para a terceira etapa com os parâmetros necessários.
+
+LAB
+PRATICANTE
+Processo de várias etapas sem controle de acesso em uma das etapas.
+Não resolvido
+Controle de acesso baseado em referenciador
+Alguns sites baseiam o controle de acesso no Referercabeçalho enviado na requisição HTTP. Esse Referercabeçalho pode ser adicionado às requisições pelos navegadores para indicar qual página iniciou a solicitação.
+
+Por exemplo, um aplicativo impõe um controle de acesso robusto à página administrativa principal em /admin, mas para subpáginas como , /admin/deleteUserele inspeciona apenas o Referercabeçalho. Se o Referercabeçalho contiver a /adminURL principal, a solicitação será permitida.
+
+Nesse caso, o Referercabeçalho pode ser totalmente controlado por um atacante. Isso significa que ele pode forjar solicitações diretas para subpáginas sensíveis, fornecendo o Referercabeçalho necessário, e obter acesso não autorizado.
+
+LAB
+PRATICANTE
+Controle de acesso baseado em referenciador
+Não resolvido
+Controle de acesso baseado em localização
+Alguns sites aplicam controles de acesso com base na localização geográfica do usuário. Isso pode ocorrer, por exemplo, em aplicativos bancários ou serviços de mídia onde se aplicam leis estaduais ou restrições comerciais. Esses controles de acesso podem ser contornados com o uso de proxies da web, VPNs ou manipulação de mecanismos de geolocalização do lado do cliente.
+
+Como prevenir vulnerabilidades no controle de acesso
+As vulnerabilidades de controle de acesso podem ser prevenidas adotando uma abordagem de defesa em profundidade e aplicando os seguintes princípios:
+
+Nunca confie apenas na ofuscação para controle de acesso.
+A menos que um recurso se destine a ser de acesso público, negue o acesso por padrão.
+Sempre que possível, utilize um mecanismo único para toda a aplicação para impor controles de acesso.
+No nível do código, torne obrigatório que os desenvolvedores declarem o acesso permitido para cada recurso e negue o acesso por padrão.
+Realize uma auditoria completa e teste os controles de acesso para garantir que funcionem conforme o planejado.
+Referências diretas inseguras a objetos (IDOR)
+Nesta seção, explicaremos o que são referências diretas inseguras a objetos (IDOR) e descreveremos algumas vulnerabilidades comuns.
+
+O que são referências diretas a objetos inseguras (IDOR)?
+Referências diretas inseguras a objetos (IDOR, na sigla em inglês) são um tipo de vulnerabilidade de controle de acesso que surge quando um aplicativo usa entradas fornecidas pelo usuário para acessar objetos diretamente. O termo IDOR foi popularizado por sua aparição na lista OWASP Top Ten de 2007. No entanto, é apenas um exemplo entre muitos erros de implementação de controle de acesso que podem levar à sua burla. As vulnerabilidades IDOR são mais comumente associadas à escalação horizontal de privilégios, mas também podem surgir em relação à escalação vertical de privilégios.
+
+Exemplos de IDOR
+Existem muitos exemplos de vulnerabilidades de controle de acesso em que valores de parâmetros controlados pelo usuário são usados ​​para acessar recursos ou funções diretamente.
+
+Vulnerabilidade IDOR com referência direta a objetos de banco de dados
+Considere um site que utiliza a seguinte URL para acessar a página da conta do cliente, recuperando informações do banco de dados do servidor:
+
+https://insecure-website.com/customer_account?customer_number=132355
+Neste caso, o número do cliente é usado diretamente como índice de registro em consultas realizadas no banco de dados de back-end. Se não houver outros controles em vigor, um atacante pode simplesmente modificar o customer_numbervalor, burlando os controles de acesso para visualizar os registros de outros clientes. Este é um exemplo de vulnerabilidade IDOR que leva à escalada horizontal de privilégios.
+
+Um atacante pode conseguir realizar escalonamento de privilégios horizontal e vertical, alterando o perfil do usuário para um com privilégios adicionais e burlando os controles de acesso. Outras possibilidades incluem explorar vazamentos de senha ou modificar parâmetros depois que o atacante já tiver acessado a página da conta do usuário, por exemplo.
+
+Vulnerabilidade IDOR com referência direta a arquivos estáticos
+As vulnerabilidades IDOR geralmente surgem quando recursos sensíveis estão localizados em arquivos estáticos no sistema de arquivos do servidor. Por exemplo, um site pode salvar transcrições de mensagens de bate-papo em disco usando um nome de arquivo sequencial e permitir que os usuários as recuperem visitando uma URL como a seguinte:
+
+https://insecure-website.com/static/12144.txt
+Nessa situação, um invasor pode simplesmente modificar o nome do arquivo para recuperar uma transcrição criada por outro usuário e, potencialmente, obter credenciais de usuário e outros dados confidenciais.

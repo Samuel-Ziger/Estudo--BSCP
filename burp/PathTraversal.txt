@@ -1,0 +1,97 @@
+Percurso de caminho
+Nesta seção, explicamos:
+
+O que é travessia de caminho?
+Como realizar ataques de travessia de trajetória e contornar obstáculos comuns.
+Como prevenir vulnerabilidades de travessia de diretório.
+Percurso de caminho
+Laboratórios
+Se você já conhece os conceitos básicos de path traversal e quer praticar sua exploração em alvos realistas e deliberadamente vulneráveis, pode acessar os laboratórios sobre este tópico no link abaixo.
+
+Veja todos os laboratórios de análise de trajetória
+O que é travessia de caminho?
+A travessia de diretório, também conhecida como path traversal, é uma vulnerabilidade que permite a um atacante ler arquivos arbitrários no servidor que executa uma aplicação. Isso pode incluir:
+
+Código e dados da aplicação.
+Credenciais para sistemas de back-end.
+Arquivos confidenciais do sistema operacional.
+Em alguns casos, um atacante pode conseguir escrever em arquivos arbitrários no servidor, permitindo-lhe modificar dados ou comportamento da aplicação e, em última instância, assumir o controle total do servidor.
+
+
+Leitura de arquivos arbitrários por meio de travessia de diretórios
+Imagine um aplicativo de compras que exibe imagens de itens à venda. Para carregar uma imagem, seria necessário o seguinte código HTML:
+
+<img src="/loadImage?filename=218.png">
+A loadImageURL recebe um filenameparâmetro e retorna o conteúdo do arquivo especificado. Os arquivos de imagem são armazenados em disco no diretório /var/www/images/. Para retornar uma imagem, o aplicativo anexa o nome do arquivo solicitado a este diretório base e usa uma API do sistema de arquivos para ler o conteúdo do arquivo. Em outras palavras, o aplicativo lê do seguinte caminho de arquivo:
+
+/var/www/images/218.png
+Esta aplicação não implementa nenhuma defesa contra ataques de travessia de diretório. Como resultado, um atacante pode solicitar a seguinte URL para recuperar o /etc/passwdarquivo do sistema de arquivos do servidor:
+
+https://insecure-website.com/loadImage?filename=../../../etc/passwd
+Isso faz com que o aplicativo leia o seguinte caminho de arquivo:
+
+/var/www/images/../../../etc/passwd
+A sequência ../é válida dentro de um caminho de arquivo e significa subir um nível na estrutura de diretórios. As três ../sequências consecutivas sobem do /var/www/images/diretório raiz do sistema de arquivos, portanto, o arquivo que é efetivamente lido é:
+
+/etc/passwd
+Em sistemas operacionais baseados em Unix, este é um arquivo padrão que contém detalhes dos usuários registrados no servidor, mas um invasor poderia obter outros arquivos arbitrários usando a mesma técnica.
+
+No Windows, tanto `/var/www/html` ../quanto ..\`/var/www/html` são sequências válidas de travessia de diretório. O exemplo a seguir ilustra um ataque equivalente contra um servidor baseado em Windows:
+
+https://insecure-website.com/loadImage?filename=..\..\..\windows\win.ini
+LAB
+APRENDIZ
+Percurso de arquivos, caso simples
+Não resolvido
+Obstáculos comuns à exploração de vulnerabilidades de travessia de diretórios
+Muitas aplicações que inserem dados do usuário em caminhos de arquivos implementam defesas contra ataques de travessia de diretórios. Essas defesas, porém, podem ser contornadas com frequência.
+
+Se um aplicativo remover ou bloquear sequências de travessia de diretório do nome do arquivo fornecido pelo usuário, pode ser possível contornar essa defesa usando diversas técnicas.
+
+Você pode usar um caminho absoluto a partir da raiz do sistema de arquivos, como filename=/etc/passwd, para referenciar diretamente um arquivo sem usar nenhuma sequência de percurso.
+
+LAB
+PRATICANTE
+Percurso de arquivos, sequências de percurso bloqueadas com desvio de caminho absoluto
+Não resolvido
+Você pode usar sequências de percurso aninhadas, como ` ....//and` ou `or` ....\/. Elas se transformam em sequências de percurso simples quando a sequência interna é removida.
+
+LAB
+PRATICANTE
+Percurso de arquivos, sequências de percurso removidas de forma não recursiva
+Não resolvido
+Em alguns contextos, como em um caminho de URL ou no filenameparâmetro de uma multipart/form-datarequisição, os servidores web podem remover quaisquer sequências de navegação de diretório antes de passar sua entrada para a aplicação. Às vezes, você pode contornar esse tipo de sanitização codificando a URL, ou até mesmo codificando-a duas ../vezes. Isso resulta em `\0` %2e%2e%2fe `\0`, %252e%252e%252frespectivamente. Diversas codificações não padronizadas, como ` ..%c0%af\0` ou `\ ..%ef%bc%8f0`, também podem funcionar.
+
+Para usuários do Burp Suite Professional, o Burp Intruder fornece a lista de payloads predefinida Fuzzing - path traversal . Esta lista contém algumas sequências de path traversal codificadas que você pode testar.
+
+LAB
+PRATICANTE
+Percurso de arquivos, sequências de percurso sem decodificação de URL supérflua.
+Não resolvido
+Uma aplicação pode exigir que o nome do arquivo fornecido pelo usuário comece com a pasta base esperada, como /var/www/images. Nesse caso, pode ser possível incluir a pasta base necessária seguida por sequências de busca adequadas. Por exemplo: filename=/var/www/images/../../../etc/passwd.
+
+LAB
+PRATICANTE
+Percurso do caminho do arquivo, validação do início do caminho
+Não resolvido
+Uma aplicação pode exigir que o nome do arquivo fornecido pelo usuário termine com uma extensão de arquivo esperada, como .png.pdf. Nesse caso, pode ser possível usar um byte nulo para efetivamente encerrar o caminho do arquivo antes da extensão necessária. Por exemplo: filename=../../../etc/passwd%00.png.pdf.
+
+LAB
+PRATICANTE
+Percurso do caminho do arquivo, validação da extensão do arquivo com bypass de byte nulo
+Não resolvido
+Como prevenir um ataque de travessia de diretório
+A maneira mais eficaz de prevenir vulnerabilidades de travessia de diretório é evitar completamente o envio de dados fornecidos pelo usuário para as APIs do sistema de arquivos. Muitas funções de aplicativos que fazem isso podem ser reescritas para oferecer o mesmo comportamento de uma forma mais segura.
+
+Se não for possível evitar o envio de dados fornecidos pelo usuário para as APIs do sistema de arquivos, recomendamos o uso de duas camadas de defesa para prevenir ataques:
+
+Valide a entrada do usuário antes de processá-la. Idealmente, compare a entrada do usuário com uma lista de valores permitidos. Se isso não for possível, verifique se a entrada contém apenas conteúdo permitido, como caracteres alfanuméricos.
+Após validar a entrada fornecida, anexe-a ao diretório base e use uma API do sistema de arquivos da plataforma para canonicalizar o caminho. Verifique se o caminho canonicalizado começa com o diretório base esperado.
+Abaixo segue um exemplo de código Java simples para validar o caminho canônico de um arquivo com base na entrada do usuário:
+
+File file = new File(BASE_DIRECTORY, userInput);
+if (file.getCanonicalPath().startsWith(BASE_DIRECTORY)) {
+    // process file
+}
+Leia mais
+Encontre vulnerabilidades de travessia de diretório usando o scanner de vulnerabilidades web do Burp Suite.

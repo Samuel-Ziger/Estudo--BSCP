@@ -1,0 +1,18 @@
+.nosql-principle { margin:24px 0; padding:18px 20px; border-left:3px solid #24c7b1; background:rgba(36,199,177,.09); color:#bac5c2 }
+.nosql-principle b { color:#6ee3d2 }
+.nosql-flow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:24px 0 }
+.nosql-flow span { padding:10px 13px; border:1px solid var(--line); color:#bceee7; font:700 9px 'IBM Plex Mono' }
+.nosql-flow i { color:#24c7b1; font-style:normal }
+.nosql-models { display:grid; grid-template-columns:repeat(3,1fr); gap:9px; margin:24px 0 }
+.nosql-models article { padding:16px; border:1px solid var(--line); background:rgba(36,199,177,.045) }
+.nosql-models b,.nosql-models span { display:block }
+.nosql-models b { color:#6ee3d2; font:800 9px 'IBM Plex Mono' }
+.nosql-models span { margin-top:8px; color:#bac5c2; line-height:1.55 }
+.nosql-compare { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:24px 0 }
+.nosql-compare article { min-width:0; padding:16px; border:1px solid var(--line) }
+.nosql-compare small { display:block; margin-bottom:10px; color:#6ee3d2; font:800 9px 'IBM Plex Mono' }
+.nosql-compare code { display:block; overflow:auto; color:#dce6e3; font:10px/1.6 'IBM Plex Mono'; white-space:nowrap }
+.nosql-pipeline { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); margin:24px 0; border-top:1px solid var(--line); border-left:1px solid var(--line) }
+.nosql-pipeline span,.nosql-pipeline b { padding:13px 9px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); text-align:center; font:700 8px 'IBM Plex Mono' }
+.nosql-pipeline b { color:#6ee3d2; background:rgba(36,199,177,.08) }
+@media(max-width:700px){.nosql-models,.nosql-compare{grid-template-columns:1fr}.nosql-pipeline{grid-template-columns:1fr 1fr}.nosql-pipeline b{grid-column:1/-1}}

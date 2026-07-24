@@ -1,0 +1,11 @@
+.logic-invariant { margin:24px 0; padding:18px 20px; border-left:3px solid #ef5da8; background:rgba(239,93,168,.07); color:#bac5c2 }
+.logic-flow { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:24px 0 }
+.logic-flow span { padding:10px 14px; border:1px solid var(--line); color:#dce6e3; font:700 10px 'IBM Plex Mono' }
+.logic-flow i { color:#ef5da8; font-style:normal }
+.logic-channels { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:24px 0 }
+.logic-channels span,.logic-channels b { padding:14px; border:1px solid var(--line); text-align:center; font:700 10px 'IBM Plex Mono' }
+.logic-channels b { grid-column:1/-1; color:#ef5da8; background:rgba(239,93,168,.07) }
+.logic-review { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:22px 0 }
+.logic-review p { margin:0; padding:16px; border:1px solid var(--line) }
+.logic-review b { color:#ef5da8 }
+@media(max-width:700px){.logic-channels,.logic-review{grid-template-columns:1fr 1fr}}

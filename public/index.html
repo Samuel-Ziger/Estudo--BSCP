@@ -4,39 +4,52 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Plataforma local de preparação prática para a BSCP">
-  <title>Cache//Lab — BSCP Training</title>
+  <title>BSCP//Forge — Training System</title>
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/pedagogy.css">
+  <link rel="stylesheet" href="/cache-lessons.css">
+  <link rel="stylesheet" href="/llm-lessons.css">
+  <link rel="stylesheet" href="/auth-lessons.css">
+  <link rel="stylesheet" href="/path-lessons.css">
+  <link rel="stylesheet" href="/command-lessons.css">
+  <link rel="stylesheet" href="/business-lessons.css">
+  <link rel="stylesheet" href="/api-lessons.css">
+  <link rel="stylesheet" href="/information-lessons.css">
+  <link rel="stylesheet" href="/access-lessons.css">
+  <link rel="stylesheet" href="/upload-lessons.css">
+  <link rel="stylesheet" href="/nosql-lessons.css">
+  <link rel="stylesheet" href="/improvements.css">
 </head>
 <body>
-  <aside class="sidebar">
-    <a class="brand" href="#top"><span class="brand-mark">C//L</span><span>Cache Lab<small>BSCP TRAINING SYSTEM</small></span></a>
-    <nav>
-      <button class="nav-item active" data-view="dashboard"><span>01</span> Visão geral</button>
-      <button class="nav-item module-menu-toggle" id="moduleMenuToggle"><span>◆</span> Módulos <b>⌄</b></button>
-      <div class="module-submenu" id="moduleSubmenu">
-        <button class="module-side active" data-module="web-cache"><i>01</i><span>Web Cache Deception<small>8 trilhas · 40 labs</small></span></button>
-        <button class="module-side" data-module="web-llm"><i>02</i><span>Ataques de Web LLM<small>4 trilhas · 20 labs</small></span></button>
-      </div>
+  <a class="skip-link" href="#top">Pular para o conteúdo</a>
+  <aside class="sidebar" aria-label="Navegação da academia">
+    <a class="brand" href="#top"><span class="brand-mark">B//F</span><span>BSCP Forge<small>OFFENSIVE TRAINING SYSTEM</small></span></a>
+    <nav aria-label="Seções principais">
+      <button class="nav-item active" data-view="dashboard" aria-current="page"><span>01</span> Visão geral</button>
+      <button class="nav-item module-menu-toggle" id="moduleMenuToggle" aria-expanded="false" aria-controls="moduleSubmenu"><span>◆</span> Módulos <b>⌄</b></button>
+      <div class="module-submenu" id="moduleSubmenu" aria-label="Módulos de estudo" hidden></div>
       <button class="nav-item" data-view="learn"><span>02</span> Trilha didática</button>
       <button class="nav-item" data-view="labs"><span>03</span> Mini labs</button>
-      <button class="nav-item" data-view="original"><span>04</span> Texto PortSwigger</button>
-      <button class="nav-item" data-view="notes"><span>05</span> Meu caderno</button>
+      <button class="nav-item" data-view="learning"><span>04</span> Aprendizagem</button>
+      <button class="nav-item" data-view="metrics"><span>05</span> Métricas</button>
+      <button class="nav-item" data-view="original"><span>06</span> Texto PortSwigger</button>
+      <button class="nav-item" data-view="notes"><span>07</span> Meu caderno</button>
     </nav>
     <div class="sidebar-progress">
       <div class="eyebrow">PROGRESSO GLOBAL</div>
-      <div class="progress"><i id="sideProgress"></i></div>
-      <strong><span id="sideSolved">0</span> / 60 labs</strong>
+      <div class="progress" id="progressBar" role="progressbar" aria-label="Progresso global" aria-valuemin="0" aria-valuemax="285" aria-valuenow="0"><i id="sideProgress"></i></div>
+      <strong><span id="sideSolved">0</span> / <span id="sideTotal">0</span> labs</strong>
     </div>
-    <div class="system-status"><i></i> LAB SERVER ONLINE</div>
+    <div class="system-status" id="systemStatus" role="status" aria-live="polite"><i></i> CONECTANDO AO LAB</div>
   </aside>
 
   <main id="top">
     <header class="topbar">
-      <div><span class="crumb">ACADEMY / WEB CACHE /</span> <strong id="currentCrumb">OVERVIEW</strong></div>
-      <div class="top-actions"><span class="streak">LOCAL & SAFE</span><button id="resetCache" class="outline">Limpar cache</button></div>
+      <div><span class="crumb">ACADEMY / <b id="moduleCrumb">WEB CACHE</b> /</span> <strong id="currentCrumb">OVERVIEW</strong></div>
+      <div class="top-actions"><span class="streak">LOCAL & SAFE</span><button id="resetCache" class="outline">Reiniciar labs</button><button id="resetProgress" class="outline">Zerar progresso</button></div>
     </header>
 
-    <section id="dashboard" class="view active">
+    <section id="dashboard" class="view active" aria-labelledby="heroTitle">
       <div class="hero-grid">
         <div class="hero-copy">
           <span class="tag" id="heroTag">MÓDULO 01 · WEB CACHE DECEPTION</span>
@@ -46,7 +59,7 @@
         </div>
         <div class="request-card">
           <div class="terminal-head"><span>REQUEST_FLOW.HTTP</span><i></i><i></i><i></i></div>
-          <pre><span class="muted">GET</span> <b>/account/wcd.css</b> HTTP/1.1
+          <pre id="requestExample"><span class="muted">GET</span> <b>/account/wcd.css</b> HTTP/1.1
 Host: lab.local
 Cookie: session=<mark>victim</mark>
 
@@ -61,10 +74,10 @@ X-Cache: <strong>MISS → HIT</strong></pre>
         </div>
       </div>
 
-      <div class="stats" id="stats"></div>
+      <div class="stats" id="stats" aria-live="polite"></div>
 
-      <div class="section-heading"><div><span class="eyebrow">MAPA DE ATAQUE</span><h2>O RACIOCÍNIO EM 4 PASSOS</h2></div><p>Da observação à recuperação dos dados da vítima.</p></div>
-      <div class="method-grid">
+      <div class="section-heading"><div><span class="eyebrow" id="methodEyebrow">MAPA DE ATAQUE</span><h2 id="methodTitle">O RACIOCÍNIO EM 4 PASSOS</h2></div><p id="methodDescription">Da observação à recuperação dos dados da vítima.</p></div>
+      <div class="method-grid" id="methodGrid">
         <article><span>01</span><h3>ENCONTRE O DINÂMICO</h3><p>Localize um endpoint GET que devolva dados privados e observe a resposta bruta no Burp.</p><code>GET /account</code></article>
         <article><span>02</span><h3>MEÇA O CACHE</h3><p>Use cache busters e confirme o comportamento por headers, idade e tempo de resposta.</p><code>X-Cache: miss → hit</code></article>
         <article><span>03</span><h3>CRIE AMBIGUIDADE</h3><p>Faça cache e origem discordarem usando extensão, delimitador ou normalização.</p><code>/account;wcd.css</code></article>
@@ -72,38 +85,60 @@ X-Cache: <strong>MISS → HIT</strong></pre>
       </div>
     </section>
 
-    <section id="learn" class="view">
-      <div class="page-title"><span class="tag">TEORIA INTERATIVA</span><h1>DO ZERO AO EXPLOIT</h1><p>Leia em blocos curtos, compare interpretações e teste cada hipótese no Burp.</p></div>
+    <section id="learn" class="view" aria-labelledby="learnTitle" hidden>
+      <div class="page-title"><span class="tag">TEORIA INTERATIVA</span><h1 id="learnTitle">DO ZERO AO EXPLOIT</h1><p>Leia em blocos curtos, compare interpretações e teste cada hipótese no Burp.</p></div>
       <div class="learn-layout">
         <div class="lesson-index" id="lessonIndex"></div>
         <article class="lesson" id="lessonContent"></article>
       </div>
     </section>
 
-    <section id="labs" class="view">
-      <div class="page-title"><span class="tag">40 DESAFIOS LOCAIS</span><h1>CAMPO DE TREINAMENTO</h1><p>Cinco níveis por técnica. Use o proxy do Burp apontando para <code>127.0.0.1:3000</code>.</p></div>
-      <div class="filter-row"><button class="chip active" data-filter="all">Todos os módulos</button><button class="chip" data-filter="web-cache">Web Cache</button><button class="chip" data-filter="web-llm">Web LLM</button><button class="chip" data-filter="open">Em aberto</button><button class="chip" data-filter="solved">Resolvidos</button></div>
+    <section id="labs" class="view" aria-labelledby="labsTitle" hidden>
+      <div class="page-title"><span class="tag" id="labsTag">CARREGANDO LABS...</span><h1 id="labsTitle">CAMPO DE TREINAMENTO</h1><p>Cinco níveis por técnica. Use o proxy do Burp apontando para <code>127.0.0.1:3000</code>.</p></div>
+      <div class="study-toolbar"><div class="filter-row" id="moduleFilters" role="region" aria-label="Filtros dos mini labs" tabindex="0"></div><label>Perfil de estudo <select id="difficultyProfile"><option value="guided">Guiado</option><option value="standard" selected>Padrão</option><option value="expert">Especialista</option></select></label></div>
       <div id="trackList" class="track-list"></div>
     </section>
 
-    <section id="original" class="view">
-      <div class="page-title"><span class="tag">REFERÊNCIA INTEGRAL</span><h1>CONTEÚDO PORTSWIGGER</h1><p>Material fornecido no arquivo <code>Webcache.txt</code>, preservado integralmente para consulta.</p></div>
-      <div class="original-tools"><button class="chip active" id="originalCache">Web Cache</button><button class="chip" id="originalLlm">Web LLM</button><input id="searchOriginal" placeholder="Buscar no conteúdo..."><span id="searchCount"></span></div>
+    <section id="learning" class="view" aria-labelledby="learningTitle" hidden>
+      <div class="page-title"><span class="tag">FASE 2 · APRENDIZAGEM</span><h1 id="learningTitle">PRATIQUE E REVISE</h1><p>Glossário, quiz, checklist, revisão de erros e desafio final dos módulos atuais.</p></div>
+      <div id="learningContent"></div>
+    </section>
+
+    <section id="metrics" class="view" aria-labelledby="metricsTitle" hidden>
+      <div class="page-title"><span class="tag">FASE 4 · RECURSOS AVANÇADOS</span><h1 id="metricsTitle">MÉTRICAS E SIMULADO</h1><p>Acompanhe XP, tentativas por técnica, respostas incorretas e gere um simulado local.</p></div>
+      <div id="metricsContent"></div>
+    </section>
+
+    <section id="original" class="view" aria-labelledby="originalTitle" hidden>
+      <div class="page-title"><span class="tag">REFERÊNCIA INTEGRAL</span><h1 id="originalTitle">CONTEÚDO PORTSWIGGER</h1><p>Materiais oficiais fornecidos para o projeto, preservados para consulta e usados como base dos engines.</p></div>
+      <div class="original-tools"><div class="original-module-list" id="originalModules"></div><label class="search-field"><span class="sr-only">Buscar no conteúdo</span><input id="searchOriginal" placeholder="Buscar no conteúdo..."></label><span id="searchCount"></span></div>
       <article class="original-text" id="originalText"></article>
     </section>
 
-    <section id="notes" class="view">
-      <div class="page-title"><span class="tag">ARMAZENADO NO NAVEGADOR</span><h1>MEU CADERNO</h1><p>Registre payloads, hipóteses e sinais importantes durante os testes.</p></div>
-      <textarea id="notebook" placeholder="Ex.: /account;wcd.css — origem trunca em ;, cache aplica regra .css..."></textarea>
+    <section id="notes" class="view" aria-labelledby="notesTitle" hidden>
+      <div class="page-title"><span class="tag">ARMAZENADO NO NAVEGADOR</span><h1 id="notesTitle">MEU CADERNO</h1><p>Registre payloads, hipóteses e sinais importantes durante os testes.</p></div>
+      <label class="sr-only" for="notebook">Anotações do caderno</label><textarea id="notebook" placeholder="Ex.: /account;wcd.css — origem trunca em ;, cache aplica regra .css..."></textarea>
       <div class="note-footer"><span id="noteStatus">Salvo automaticamente</span><button class="outline" id="exportNotes">Exportar .txt</button></div>
     </section>
   </main>
 
-  <dialog id="labDialog">
+  <dialog id="labDialog" aria-labelledby="labDialogTitle" aria-describedby="labDialogObjective">
     <button class="dialog-close" aria-label="Fechar">×</button>
     <div id="labDetail"></div>
   </dialog>
-  <div id="toast" role="status"></div>
+  <div id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+  <script src="/lessons.js"></script>
+  <script src="/cache-lessons.js"></script>
+  <script src="/llm-lessons.js"></script>
+  <script src="/auth-lessons.js"></script>
+  <script src="/path-lessons.js"></script>
+  <script src="/command-lessons.js"></script>
+  <script src="/business-lessons.js"></script>
+  <script src="/api-lessons.js"></script>
+  <script src="/information-lessons.js"></script>
+  <script src="/access-lessons.js"></script>
+  <script src="/upload-lessons.js"></script>
+  <script src="/nosql-lessons.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>

@@ -1,0 +1,216 @@
+vulnerabilidades de divulgação de informações
+Nesta seção, explicaremos os conceitos básicos de vulnerabilidades de divulgação de informações e descreveremos como você pode encontrá-las e explorá-las. Também ofereceremos algumas orientações sobre como você pode prevenir vulnerabilidades de divulgação de informações em seus próprios sites.
+
+Infográfico de divulgação de informações
+Aprender a encontrar e explorar vulnerabilidades de divulgação de informações é uma habilidade vital para qualquer testador. É provável que você se depare com isso regularmente e, uma vez que saiba como explorá-las de forma eficaz, isso pode ajudá-lo a melhorar a eficiência dos seus testes e permitir que você encontre bugs adicionais de alta gravidade.
+
+Laboratórios
+Se você já está familiarizado com os conceitos básicos por trás das vulnerabilidades de divulgação de informações e apenas deseja praticar a exploração delas em alvos realistas e deliberadamente vulneráveis, você pode acessar todos os laboratórios deste tópico através do link abaixo.
+
+Veja todos os laboratórios de divulgação de informações
+O que é divulgação de informações?
+A divulgação de informações, também conhecida como vazamento de informações, ocorre quando um site revela involuntariamente informações confidenciais aos seus usuários. Dependendo do contexto, os sites podem vazar todos os tipos de informações para um potencial invasor, incluindo:
+
+Dados sobre outros usuários, como nomes de usuário ou informações financeiras.
+Dados comerciais ou empresariais sensíveis
+Detalhes técnicos sobre o site e sua infraestrutura
+Os perigos do vazamento de dados confidenciais de usuários ou empresas são bastante óbvios, mas a divulgação de informações técnicas pode ser igualmente grave. Embora algumas dessas informações tenham utilidade limitada, elas podem ser um ponto de partida para expor uma superfície de ataque adicional, que pode conter outras vulnerabilidades interessantes. O conhecimento que você conseguir reunir pode até mesmo fornecer a peça que faltava no quebra-cabeça ao tentar construir ataques complexos e de alta gravidade.
+
+Ocasionalmente, informações sensíveis podem ser vazadas inadvertidamente para usuários que estão simplesmente navegando no site normalmente. Mais comumente, no entanto, um invasor precisa obter a divulgação das informações interagindo com o site de maneiras inesperadas ou maliciosas. Em seguida, ele estudará cuidadosamente as respostas do site para tentar identificar comportamentos suspeitos.
+
+Exemplos de divulgação de informações
+Alguns exemplos básicos de divulgação de informações são os seguintes:
+
+Revelar os nomes de diretórios ocultos, sua estrutura e seu conteúdo por meio de uma robots.txtlistagem de arquivos ou diretórios.
+Fornecer acesso aos arquivos de código-fonte por meio de backups temporários.
+Mencionar explicitamente os nomes das tabelas ou colunas do banco de dados nas mensagens de erro.
+Expor desnecessariamente informações altamente sensíveis, como dados de cartão de crédito.
+Inserir chaves de API, endereços IP, credenciais de banco de dados e outros dados diretamente no código-fonte.
+Indicar a existência ou ausência de recursos, nomes de usuário e assim por diante por meio de diferenças sutis no comportamento do aplicativo.
+Neste tópico, você aprenderá como encontrar e explorar alguns desses exemplos e muito mais.
+
+Leia mais
+Como encontrar e explorar vulnerabilidades de divulgação de informações
+Como surgem as vulnerabilidades na divulgação de informações?
+As vulnerabilidades de divulgação de informações podem surgir de inúmeras maneiras diferentes, mas podem ser categorizadas de forma geral da seguinte maneira:
+
+A falha em remover conteúdo interno do conteúdo público . Por exemplo, comentários de desenvolvedores em marcação às vezes ficam visíveis para usuários no ambiente de produção.
+Configuração insegura do site e tecnologias relacionadas . Por exemplo, não desativar os recursos de depuração e diagnóstico pode, às vezes, fornecer aos invasores ferramentas úteis para obter informações confidenciais. Configurações padrão também podem deixar os sites vulneráveis, por exemplo, exibindo mensagens de erro excessivamente detalhadas.
+Falhas no design e no comportamento da aplicação . Por exemplo, se um site retorna respostas diferentes quando ocorrem erros distintos, isso também pode permitir que invasores enumerem dados sensíveis , como credenciais de usuário válidas.
+Qual o impacto das vulnerabilidades na divulgação de informações?
+Vulnerabilidades na divulgação de informações podem ter impactos diretos e indiretos, dependendo da finalidade do site e, consequentemente, das informações que um invasor consegue obter. Em alguns casos, o simples ato de divulgar informações sensíveis pode ter um grande impacto sobre as partes afetadas. Por exemplo, uma loja online que vaza os dados de cartão de crédito de seus clientes provavelmente sofrerá consequências graves.
+
+Por outro lado, o vazamento de informações técnicas, como a estrutura de diretórios ou quais frameworks de terceiros estão sendo usados, pode ter pouco ou nenhum impacto direto. No entanto, em mãos erradas, essa informação pode ser a chave para a criação de diversos outros exploits. A gravidade, nesse caso, depende do que o atacante conseguir fazer com essa informação.
+
+Como avaliar a gravidade das vulnerabilidades de divulgação de informações
+Embora o impacto final possa ser potencialmente muito grave, a divulgação de informações só se torna um problema de alta gravidade em circunstâncias específicas. Durante os testes, a divulgação de informações técnicas, em particular, costuma ser relevante apenas se for possível demonstrar como um atacante poderia utilizá-las para fins prejudiciais.
+
+Por exemplo, saber que um site está usando uma versão específica de framework tem utilidade limitada se essa versão estiver totalmente atualizada. No entanto, essa informação torna-se significativa quando o site está usando uma versão antiga que contém uma vulnerabilidade conhecida. Nesse caso, realizar um ataque devastador pode ser tão simples quanto explorar uma vulnerabilidade publicamente documentada.
+
+É importante usar o bom senso quando você descobre que informações potencialmente sensíveis estão sendo vazadas. É provável que pequenos detalhes técnicos possam ser descobertos de diversas maneiras em muitos dos sites que você testa. Portanto, seu foco principal deve ser o impacto e a possibilidade de exploração das informações vazadas, e não apenas a presença da divulgação de informações como um problema isolado. A exceção óbvia a isso é quando as informações vazadas são tão sensíveis que justificam atenção por si só.
+
+Exploração da divulgação de informações
+Reunimos algumas dicas mais práticas para ajudar você a identificar e explorar esses tipos de vulnerabilidades. Você também pode praticar essas técnicas usando nossos laboratórios interativos.
+
+Leia mais
+Como encontrar e explorar vulnerabilidades de divulgação de informações
+Como prevenir vulnerabilidades de divulgação de informações
+Impedir completamente a divulgação de informações é complexo devido à enorme variedade de formas como isso pode ocorrer. No entanto, existem algumas boas práticas gerais que você pode seguir para minimizar o risco de que esses tipos de vulnerabilidade se infiltrem em seus sites.
+
+Certifique-se de que todos os envolvidos na produção do site estejam plenamente cientes de quais informações são consideradas sensíveis. Às vezes, informações aparentemente inofensivas podem ser muito mais úteis para um invasor do que se imagina. Destacar esses perigos pode ajudar a garantir que as informações sensíveis sejam tratadas com mais segurança em geral pela sua organização.
+Como parte dos seus processos de controle de qualidade ou de compilação, audite todo o código em busca de possíveis divulgações de informações. Automatizar algumas das tarefas associadas, como remover comentários do desenvolvedor, deve ser relativamente fácil.
+Use mensagens de erro genéricas sempre que possível. Não forneça aos atacantes pistas desnecessárias sobre o comportamento da aplicação.
+Verifique novamente se todos os recursos de depuração ou diagnóstico estão desativados no ambiente de produção.
+Certifique-se de compreender completamente as configurações e as implicações de segurança de qualquer tecnologia de terceiros que você implementar. Dedique um tempo para investigar e desativar quaisquer recursos e configurações que você não precise.
+Como encontrar e explorar vulnerabilidades de divulgação de informações
+Nesta seção, forneceremos conselhos práticos sobre algumas técnicas e ferramentas que você pode usar para ajudar a identificar a divulgação de informações em uma ampla gama de contextos. Também incluímos vários laboratórios para que você possa praticar a extração de diferentes tipos de informações que podem ser usadas como parte de um ataque subsequente.
+
+Testes para identificar vulnerabilidades de divulgação de informações
+Fontes comuns de divulgação de informações LABS
+Como testar vulnerabilidades de divulgação de informações
+De modo geral, é importante não desenvolver uma "visão de túnel" durante os testes. Em outras palavras, você deve evitar se concentrar demais em uma vulnerabilidade específica. Dados sensíveis podem vazar em diversos lugares, portanto, é importante não perder nada que possa ser útil posteriormente. Muitas vezes, você encontrará dados sensíveis enquanto testa outras coisas. Uma habilidade fundamental é ser capaz de reconhecer informações interessantes sempre que e onde quer que elas surjam.
+
+A seguir, apresentamos alguns exemplos de técnicas e ferramentas de alto nível que você pode usar para ajudar a identificar vulnerabilidades de divulgação de informações durante os testes.
+
+Desfoque
+Usando o Burp Scanner
+Utilizando as ferramentas de engajamento do Burp
+Respostas informativas de engenharia
+Desfoque
+Se você identificar parâmetros interessantes, pode tentar enviar tipos de dados inesperados e strings de teste especialmente criadas para ver o efeito disso. Preste muita atenção; embora as respostas às vezes revelem explicitamente informações interessantes, elas também podem indicar o comportamento do aplicativo de forma mais sutil. Por exemplo, isso pode ser uma pequena diferença no tempo necessário para processar a solicitação. Mesmo que o conteúdo de uma mensagem de erro não revele nada, às vezes o fato de um caso de erro ter sido encontrado em vez de outro já é uma informação útil por si só.
+
+Você pode automatizar grande parte desse processo usando ferramentas como o Burp Intruder. Isso oferece diversas vantagens. Principalmente, você pode:
+
+Adicione posições de carga útil aos parâmetros e use listas de palavras pré-construídas de strings de fuzzing para testar um grande volume de entradas diferentes em rápida sucessão.
+Identifique facilmente as diferenças nas respostas comparando os códigos de status HTTP, os tempos de resposta, os comprimentos e assim por diante.
+Use regras de correspondência do grep para identificar rapidamente ocorrências de palavras-chave, como error, invalid, SELECT, SQL, e assim por diante.
+Aplique regras de extração do grep para extrair e comparar o conteúdo de itens relevantes nas respostas.
+Você também pode usar a extensão Logger++ , disponível na loja BApp. Além de registrar solicitações e respostas de todas as ferramentas do Burp, ela permite definir filtros avançados para destacar entradas relevantes. Esta é apenas uma das muitas extensões do Burp que podem ajudar você a encontrar dados sensíveis vazados pelo site.
+
+Usando o Burp Scanner
+Os usuários do Burp Suite Professional contam com o benefício do Burp Scanner. Ele oferece recursos de varredura em tempo real para auditar itens enquanto você navega, ou você pode agendar varreduras automatizadas para rastrear e auditar o site alvo em seu nome. Ambas as abordagens sinalizam automaticamente muitas vulnerabilidades de divulgação de informações. Por exemplo, o Burp Scanner alerta você se encontrar informações confidenciais, como chaves privadas, endereços de e-mail e números de cartão de crédito em uma resposta. Ele também identifica arquivos de backup, listas de diretórios e assim por diante.
+
+Utilizando as ferramentas de engajamento do Burp
+O Burp oferece diversas ferramentas de engajamento que você pode usar para encontrar informações interessantes no site alvo com mais facilidade. Você pode acessar as ferramentas de engajamento pelo menu de contexto — basta clicar com o botão direito em qualquer mensagem HTTP, entrada do Burp Proxy ou item no mapa do site e selecionar "Ferramentas de engajamento".
+
+As seguintes ferramentas são particularmente úteis neste contexto.
+
+Procurar
+Você pode usar esta ferramenta para procurar qualquer expressão dentro do item selecionado. É possível refinar os resultados usando várias opções de pesquisa avançada, como pesquisa por expressão regular ou pesquisa negativa. Isso é útil para encontrar rapidamente ocorrências (ou ausências) de palavras-chave específicas de interesse.
+
+Encontre comentários
+Você pode usar esta ferramenta para extrair rapidamente quaisquer comentários de desenvolvedores encontrados no item selecionado. Ela também fornece abas para acesso instantâneo ao ciclo de requisição/resposta HTTP no qual cada comentário foi encontrado.
+
+Descubra conteúdo
+Você pode usar esta ferramenta para identificar conteúdo e funcionalidades adicionais que não estejam vinculados ao conteúdo visível do site. Isso pode ser útil para encontrar diretórios e arquivos adicionais que não necessariamente aparecem automaticamente no mapa do site.
+
+Respostas informativas de engenharia
+Mensagens de erro detalhadas podem, por vezes, revelar informações interessantes durante o seu fluxo de trabalho de testes normal. No entanto, ao estudar como as mensagens de erro se alteram de acordo com a sua entrada, você pode ir um passo além. Em alguns casos, será possível manipular o site para extrair dados arbitrários através de uma mensagem de erro.
+
+Existem inúmeros métodos para fazer isso, dependendo do cenário específico. Um exemplo comum é fazer com que a lógica do aplicativo tente uma ação inválida em um item de dados específico. Por exemplo, o envio de um valor de parâmetro inválido pode levar a um rastreamento de pilha ou a uma resposta de depuração que contenha detalhes interessantes. Às vezes, você pode fazer com que as mensagens de erro revelem o valor dos dados desejados na resposta.
+
+Fontes comuns de divulgação de informações
+A divulgação de informações pode ocorrer em uma ampla variedade de contextos dentro de um site. A seguir, apresentamos alguns exemplos comuns de locais onde você pode verificar se informações confidenciais estão expostas.
+
+Arquivos para rastreadores da web
+Listagens de diretórios
+Comentários do desenvolvedor
+Mensagens de erro LABS
+Laboratórios de dados de depuração
+Páginas de conta de usuário LABS
+Arquivos de backup LABS
+Laboratórios de configuração insegura
+Histórico de controle de versão LABS
+Arquivos para rastreadores da web
+Muitos sites fornecem arquivos em `/etc/websites` /robots.txte /sitemap.xml`/etc/websites` para ajudar os rastreadores a navegar em seus sites. Entre outras coisas, esses arquivos geralmente listam diretórios específicos que os rastreadores devem ignorar, por exemplo, porque podem conter informações confidenciais.
+
+Como esses arquivos geralmente não são vinculados diretamente ao site, eles podem não aparecer imediatamente no mapa do site do Burp. No entanto, vale a pena tentar navegar até /robots.txteles /sitemap.xmlmanualmente para ver se você encontra algo útil.
+
+Listagens de diretórios
+Servidores web podem ser configurados para listar automaticamente o conteúdo de diretórios que não possuem uma página de índice. Isso pode auxiliar um atacante, permitindo que ele identifique rapidamente os recursos em um determinado caminho e prossiga diretamente para a análise e o ataque a esses recursos. Em particular, isso aumenta a exposição de arquivos sensíveis dentro do diretório que não deveriam ser acessíveis aos usuários, como arquivos temporários e despejos de memória (crash dumps).
+
+Os diretórios online em si não representam necessariamente uma vulnerabilidade de segurança. No entanto, se o site também não implementar um controle de acesso adequado, o vazamento da existência e localização de recursos sensíveis dessa forma torna-se claramente um problema.
+
+Comentários do desenvolvedor
+Durante o desenvolvimento, comentários HTML embutidos são às vezes adicionados à marcação. Esses comentários geralmente são removidos antes que as alterações sejam implantadas no ambiente de produção. No entanto, comentários podem ser esquecidos, omitidos ou até mesmo deixados deliberadamente por desconhecimento das implicações de segurança. Embora esses comentários não sejam visíveis na página renderizada, eles podem ser facilmente acessados ​​usando o Burp ou até mesmo as ferramentas de desenvolvedor integradas do navegador.
+
+Ocasionalmente, esses comentários contêm informações úteis para um atacante. Por exemplo, podem sugerir a existência de diretórios ocultos ou fornecer pistas sobre a lógica do aplicativo.
+
+Mensagens de erro
+Uma das causas mais comuns de divulgação de informações é a presença de mensagens de erro muito extensas. Como regra geral, você deve prestar muita atenção a todas as mensagens de erro que encontrar durante a auditoria.
+
+O conteúdo das mensagens de erro pode revelar informações sobre o tipo de entrada ou de dados esperado para um determinado parâmetro. Isso pode ajudar a refinar seu ataque, identificando parâmetros exploráveis. Pode até mesmo evitar que você perca tempo tentando injetar payloads que simplesmente não funcionarão.
+
+Mensagens de erro detalhadas também podem fornecer informações sobre as diferentes tecnologias utilizadas pelo site. Por exemplo, podem mencionar explicitamente o mecanismo de templates, o tipo de banco de dados ou o servidor que o site está usando, juntamente com o número da versão. Essas informações podem ser úteis, pois facilitam a busca por vulnerabilidades documentadas que possam existir para essa versão. Da mesma forma, é possível verificar se há erros de configuração comuns ou configurações padrão perigosas que possam ser exploradas. Algumas delas podem estar destacadas na documentação oficial.
+
+Você também pode descobrir que o site está usando algum tipo de framework de código aberto. Nesse caso, você pode estudar o código-fonte disponível publicamente, que é um recurso inestimável para construir seus próprios exploits.
+
+As diferenças entre as mensagens de erro também podem revelar comportamentos distintos da aplicação que ocorrem em segundo plano. Observar essas diferenças é um aspecto crucial de muitas técnicas, como injeção de SQL, enumeração de nomes de usuário e outras.
+
+LAB
+APRENDIZ
+Divulgação de informações em mensagens de erro
+Não resolvido
+Dados de depuração
+Para fins de depuração, muitos sites geram mensagens de erro e registros personalizados que contêm grandes quantidades de informações sobre o comportamento do aplicativo. Embora essas informações sejam úteis durante o desenvolvimento, elas também são extremamente úteis para um invasor se vazarem no ambiente de produção.
+
+As mensagens de depuração podem, por vezes, conter informações vitais para o desenvolvimento de um ataque, incluindo:
+
+Valores para variáveis ​​de sessão importantes que podem ser manipuladas por meio da entrada do usuário.
+Nomes de host e credenciais para componentes de back-end
+Nomes de arquivos e diretórios no servidor
+Chaves usadas para criptografar os dados transmitidos pelo cliente.
+Às vezes, as informações de depuração podem ser registradas em um arquivo separado. Se um invasor conseguir acessar esse arquivo, ele poderá servir como uma referência útil para entender o estado de execução do aplicativo. Também pode fornecer várias pistas sobre como ele pode inserir dados manipulados para controlar o estado do aplicativo e as informações recebidas.
+
+LAB
+APRENDIZ
+Divulgação de informações na página de depuração
+Não resolvido
+Páginas de conta de usuário
+Por sua própria natureza, a página de perfil ou conta de um usuário geralmente contém informações sensíveis, como endereço de e-mail, número de telefone, chave de API e assim por diante. Como os usuários normalmente só têm acesso à sua própria página de conta, isso não representa uma vulnerabilidade em si. No entanto, alguns sites contêm falhas lógicas que potencialmente permitem que um invasor explore essas páginas para visualizar os dados de outros usuários.
+
+Por exemplo, considere um site que determina qual página de conta de usuário carregar com base em um userparâmetro.
+
+GET /user/personal-info?user=carlos
+A maioria dos sites adota medidas para impedir que um invasor simplesmente altere esse parâmetro para acessar as páginas de conta de usuários aleatórios. No entanto, às vezes a lógica para carregar itens de dados individuais não é tão robusta.
+
+Um atacante pode não conseguir carregar completamente a página de conta de outro usuário, mas a lógica para buscar e exibir o endereço de e-mail cadastrado do usuário, por exemplo, pode não verificar se o userparâmetro corresponde ao usuário que está conectado no momento. Nesse caso, uma simples alteração do userparâmetro permitiria que um atacante exibisse endereços de e-mail de usuários aleatórios em sua própria página de conta.
+
+Analisaremos esses tipos de vulnerabilidades com mais detalhes quando abordarmos o controle de acesso e as vulnerabilidades IDOR.
+
+Leia mais
+Controle de acesso
+Divulgação do código-fonte por meio de arquivos de backup
+Obter acesso ao código-fonte facilita muito para um atacante entender o comportamento do aplicativo e construir ataques de alta gravidade. Dados sensíveis às vezes são até mesmo embutidos no código-fonte. Exemplos típicos disso incluem chaves de API e credenciais para acessar componentes de back-end.
+
+Se você conseguir identificar que uma determinada tecnologia de código aberto está sendo usada, isso proporciona acesso fácil a uma quantidade limitada de código-fonte.
+
+Ocasionalmente, é até possível fazer com que o site exponha seu próprio código-fonte. Ao mapear um site, você pode encontrar referências explícitas a alguns arquivos de código-fonte. Infelizmente, solicitá-los geralmente não revela o código em si. Quando um servidor processa arquivos com uma determinada extensão, como .php.txt, ele normalmente executa o código, em vez de simplesmente enviá-lo ao cliente como texto. No entanto, em algumas situações, você pode enganar um site para que ele retorne o conteúdo do arquivo. Por exemplo, editores de texto costumam gerar arquivos de backup temporários enquanto o arquivo original está sendo editado. Esses arquivos temporários geralmente são indicados de alguma forma, como adicionando um til (~ ~) ao nome do arquivo ou uma extensão de arquivo diferente. Solicitar um arquivo de código usando uma extensão de arquivo de backup pode, às vezes, permitir que você leia o conteúdo do arquivo na resposta.
+
+LAB
+APRENDIZ
+Divulgação do código-fonte por meio de arquivos de backup
+Não resolvido
+Uma vez que um atacante tenha acesso ao código-fonte, isso pode representar um grande avanço na identificação e exploração de vulnerabilidades adicionais que seriam praticamente impossíveis de outra forma. Um exemplo disso é a desserialização insegura. Analisaremos essa vulnerabilidade mais adiante, em um tópico específico.
+
+Leia mais
+Desserialização insegura
+Divulgação de informações devido à configuração insegura
+Os sites da internet podem ser vulneráveis ​​devido a configurações incorretas. Isso é especialmente comum devido ao uso generalizado de tecnologias de terceiros, cuja vasta gama de opções de configuração nem sempre é bem compreendida por quem as implementa.
+
+Em outros casos, os desenvolvedores podem se esquecer de desativar várias opções de depuração no ambiente de produção. Por exemplo, o TRACEmétodo HTTP é projetado para fins de diagnóstico. Se ativado, o servidor web responderá às solicitações que usam esse TRACEmétodo, repetindo na resposta a solicitação exata recebida. Esse comportamento geralmente é inofensivo, mas ocasionalmente leva à divulgação de informações, como o nome de cabeçalhos de autenticação internos que podem ser anexados às solicitações por proxies reversos.
+
+LAB
+APRENDIZ
+Burla de autenticação por meio da divulgação de informações
+Não resolvido
+Histórico de controle de versão
+Praticamente todos os sites são desenvolvidos usando algum tipo de sistema de controle de versão, como o Git. Por padrão, um projeto Git armazena todos os seus dados de controle de versão em uma pasta chamada `.git` .git. Ocasionalmente, os sites expõem esse diretório no ambiente de produção. Nesse caso, você poderá acessá-lo simplesmente navegando até `/var/www/html` /.git.
+
+Embora muitas vezes seja impraticável navegar manualmente pela estrutura e conteúdo brutos dos arquivos, existem vários métodos para baixar o .gitdiretório inteiro. Você pode então abri-lo usando sua instalação local do Git para acessar o histórico de controle de versão do site. Isso pode incluir registros contendo alterações confirmadas e outras informações relevantes.
+
+Isso pode não lhe dar acesso ao código-fonte completo, mas comparar as diferenças permitirá que você leia pequenos trechos de código. Como em qualquer código-fonte, você também pode encontrar dados sensíveis embutidos em algumas das linhas alteradas.
+
+LAB
+PRATICANTE
+Divulgação de informações no histórico de controle de versão

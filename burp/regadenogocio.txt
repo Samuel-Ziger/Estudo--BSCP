@@ -1,0 +1,56 @@
+Vulnerabilidades na lógica de negócios
+Nesta seção, apresentaremos o conceito de vulnerabilidades na lógica de negócios e explicaremos como elas podem surgir devido a suposições incorretas sobre o comportamento do usuário. Discutiremos o impacto potencial de falhas lógicas e ensinaremos como elas podem ser exploradas. Você também poderá praticar o que aprendeu usando nossos laboratórios interativos, baseados em bugs reais que encontramos em situações reais. Por fim, forneceremos algumas práticas recomendadas gerais para ajudá-lo a evitar que esses tipos de falhas lógicas surjam em seus próprios aplicativos.
+
+Vulnerabilidades na lógica de negócios
+Laboratórios
+Se você já está familiarizado com os conceitos básicos por trás das vulnerabilidades de lógica de negócios e apenas deseja praticar a exploração delas em alvos realistas e deliberadamente vulneráveis, você pode acessar todos os laboratórios deste tópico através do link abaixo.
+
+Veja todos os laboratórios de vulnerabilidades de lógica de negócios
+O que são vulnerabilidades na lógica de negócios?
+Vulnerabilidades na lógica de negócios são falhas no projeto e na implementação de uma aplicação que permitem a um atacante provocar comportamentos inesperados. Isso possibilita que os atacantes manipulem funcionalidades legítimas para atingir um objetivo malicioso. Essas falhas geralmente resultam da incapacidade de antecipar estados incomuns da aplicação e, consequentemente, da incapacidade de lidar com eles de forma segura.
+
+Observação
+Neste contexto, o termo "lógica de negócios" refere-se simplesmente ao conjunto de regras que definem como a aplicação opera. Como essas regras nem sempre estão diretamente relacionadas a um negócio, as vulnerabilidades associadas também são conhecidas como "vulnerabilidades de lógica de aplicação" ou simplesmente "falhas de lógica".
+
+Falhas lógicas costumam ser invisíveis para quem não as procura explicitamente, pois normalmente não são expostas pelo uso normal do aplicativo. No entanto, um atacante pode explorar peculiaridades comportamentais interagindo com o aplicativo de maneiras que os desenvolvedores jamais imaginaram.
+
+Um dos principais objetivos da lógica de negócios é garantir o cumprimento das regras e restrições definidas durante o projeto da aplicação ou funcionalidade. De forma geral, as regras de negócio ditam como a aplicação deve reagir quando um determinado cenário ocorre. Isso inclui impedir que os usuários realizem ações que impactem negativamente os negócios ou que simplesmente não façam sentido.
+
+Falhas na lógica podem permitir que invasores contornem essas regras. Por exemplo, eles podem conseguir concluir uma transação sem passar pelo fluxo de compra previsto. Em outros casos, a validação inadequada ou inexistente de dados fornecidos pelo usuário pode permitir que ele faça alterações arbitrárias em valores críticos para a transação ou envie dados sem sentido. Ao passar valores inesperados para a lógica do servidor, um invasor pode potencialmente induzir o aplicativo a fazer algo que não deveria.
+
+Vulnerabilidades baseadas em lógica podem ser extremamente diversas e geralmente são exclusivas da aplicação e de sua funcionalidade específica. Identificá-las frequentemente requer certo conhecimento humano, como a compreensão do domínio de negócios ou dos objetivos que um atacante poderia ter em um determinado contexto. Isso dificulta sua detecção por meio de scanners de vulnerabilidade automatizados. Consequentemente, falhas de lógica são um alvo valioso para caçadores de bugs e testadores manuais em geral.
+
+Como surgem as vulnerabilidades na lógica de negócios?
+Vulnerabilidades na lógica de negócios frequentemente surgem porque as equipes de design e desenvolvimento fazem suposições equivocadas sobre como os usuários interagirão com o aplicativo. Essas suposições incorretas podem levar à validação inadequada da entrada do usuário. Por exemplo, se os desenvolvedores presumirem que os usuários enviarão dados exclusivamente por meio de um navegador da web, o aplicativo poderá depender inteiramente de controles fracos no lado do cliente para validar a entrada. Esses controles são facilmente contornados por um invasor que utilize um proxy interceptador.
+
+Em última análise, isso significa que, quando um invasor se desvia do comportamento esperado do usuário, o aplicativo não consegue tomar as medidas apropriadas para impedir isso e, consequentemente, não consegue lidar com a situação de forma segura.
+
+Falhas lógicas são particularmente comuns em sistemas excessivamente complexos que nem mesmo a própria equipe de desenvolvimento compreende completamente. Para evitar essas falhas, os desenvolvedores precisam entender a aplicação como um todo. Isso inclui estar ciente de como diferentes funções podem ser combinadas de maneiras inesperadas. Desenvolvedores que trabalham em grandes bases de código podem não ter um conhecimento profundo de como todas as áreas da aplicação funcionam. Alguém trabalhando em um componente pode fazer suposições equivocadas sobre o funcionamento de outro componente e, como resultado, introduzir inadvertidamente falhas lógicas graves. Se os desenvolvedores não documentarem explicitamente quaisquer suposições feitas, é fácil que esse tipo de vulnerabilidade se infiltre na aplicação.
+
+Qual o impacto das vulnerabilidades na lógica de negócios?
+O impacto das vulnerabilidades na lógica de negócios pode, por vezes, ser bastante trivial. Trata-se de uma categoria ampla e o impacto é altamente variável. No entanto, qualquer comportamento não intencional pode potencialmente levar a ataques de alta gravidade se um atacante conseguir manipular a aplicação da maneira correta. Por essa razão, lógicas peculiares devem ser corrigidas, mesmo que você não consiga descobrir como explorá-las. Há sempre o risco de que outra pessoa consiga.
+
+Fundamentalmente, o impacto de qualquer falha lógica depende da funcionalidade à qual está relacionada. Se a falha estiver no mecanismo de autenticação, por exemplo, isso pode ter um impacto sério na segurança geral. Os atacantes poderiam potencialmente explorar essa falha para escalonamento de privilégios ou para burlar a autenticação completamente, obtendo acesso a dados e funcionalidades sensíveis. Isso também expõe uma superfície de ataque maior para outras explorações.
+
+Obviamente, falhas na lógica das transações financeiras podem levar a enormes prejuízos para as empresas, como roubo de fundos, fraudes e outros delitos.
+
+É importante notar também que, embora as falhas lógicas possam não permitir que um atacante se beneficie diretamente, elas ainda podem permitir que uma pessoa mal-intencionada prejudique a empresa de alguma forma.
+
+Quais são alguns exemplos de vulnerabilidades na lógica de negócios?
+A melhor maneira de entender as vulnerabilidades da lógica de negócios é analisar casos reais e aprender com os erros cometidos. Fornecemos exemplos concretos de diversas falhas lógicas comuns, bem como alguns sites deliberadamente vulneráveis ​​para que você possa praticar a exploração dessas vulnerabilidades.
+
+Leia mais
+Exemplos de vulnerabilidades na lógica de negócios
+Como prevenir vulnerabilidades na lógica de negócios
+Em resumo, as principais medidas para prevenir vulnerabilidades na lógica de negócios são:
+
+Certifique-se de que os desenvolvedores e testadores compreendam o domínio que a aplicação serve.
+Evite fazer suposições implícitas sobre o comportamento do usuário ou o comportamento de outras partes do aplicativo.
+Você deve identificar as suposições que fez sobre o estado do servidor e implementar a lógica necessária para verificar se essas suposições são atendidas. Isso inclui garantir que o valor de qualquer entrada seja plausível antes de prosseguir.
+
+É importante também garantir que tanto os desenvolvedores quanto os testadores compreendam plenamente essas premissas e como o aplicativo deve reagir em diferentes cenários. Isso pode ajudar a equipe a identificar falhas lógicas o mais cedo possível. Para facilitar isso, a equipe de desenvolvimento deve seguir as seguintes boas práticas sempre que possível:
+
+Mantenha documentos de design e fluxos de dados claros para todas as transações e fluxos de trabalho, registrando quaisquer suposições feitas em cada etapa.
+Escreva o código da forma mais clara possível. Se for difícil entender o que deve acontecer, será difícil identificar falhas de lógica. Idealmente, um código bem escrito não deveria precisar de documentação para ser compreendido. Em casos inevitavelmente complexos, produzir uma documentação clara é crucial para garantir que outros desenvolvedores e testadores saibam quais suposições estão sendo feitas e qual é exatamente o comportamento esperado.
+Observe quaisquer referências a outros códigos que utilizem cada componente. Considere os possíveis efeitos colaterais dessas dependências caso um agente malicioso as manipule de maneira incomum.
+Devido à natureza relativamente singular de muitas falhas lógicas, é fácil descartá-las como um erro isolado causado por falha humana e seguir em frente. No entanto, como demonstramos, essas falhas são frequentemente resultado de práticas inadequadas nas fases iniciais de desenvolvimento da aplicação. Analisar por que uma falha lógica existiu e como ela passou despercebida pela equipe pode ajudar a identificar pontos fracos nos seus processos. Fazendo pequenos ajustes, você pode aumentar a probabilidade de que falhas semelhantes sejam eliminadas na origem ou detectadas mais cedo no processo de desenvolvimento.
