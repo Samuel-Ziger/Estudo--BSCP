@@ -5,6 +5,8 @@ const http = require('http');
 const os = require('os');
 const path = require('path');
 const { createPluginRegistry } = require('../lib/plugin-registry');
+const { resolvePublicFile } = require('../lib/http-utils');
+const { parsePort } = require('../lib/runtime-config');
 
 const testData = fs.mkdtempSync(path.join(os.tmpdir(), 'bscp-forge-test-'));
 process.env.BSCPFORGE_DATA_DIR = testData;
@@ -99,6 +101,12 @@ function expectedRememberToken(level, username, password) {
 }
 
 async function assertCatalogAndAssets() {
+  assert.equal(parsePort(undefined), 3000);
+  assert.equal(parsePort('3001'), 3001);
+  for (const invalid of ['0', '65536', '3.5', 'not-a-port']) assert.throws(() => parsePort(invalid), /PORT deve ser/);
+  assert.equal(resolvePublicFile(path.join(__dirname, '..', 'public'), '/index.html'), path.join(__dirname, '..', 'public', 'index.html'));
+  assert.equal(resolvePublicFile(path.join(__dirname, '..', 'public'), '/../server.js'), null);
+
   const registry = createPluginRegistry(['web-cache']);
   registry.register({
     id: 'future-local',

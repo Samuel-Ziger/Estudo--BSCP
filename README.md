@@ -127,6 +127,8 @@ A suíte integrada:
 
 Para adicionar um módulo, registre trilhas e receitas no catálogo, implemente o comportamento no simulador correspondente e mantenha a interface consumindo `/api/course`. Uma nova trilha deve incluir cinco níveis e testes positivos e negativos.
 
+Plugins em `plugins/` são código Node.js local confiável, carregado sem sandbox. Revise cada arquivo antes de adicioná-lo e nunca instale plugins recebidos por upload ou por origem remota.
+
 ## Limitações e próximos passos
 
 Os simuladores abstraem componentes reais para tornar cada conceito observável. Eles não reproduzem todas as particularidades de frameworks, CDNs, modelos, sistemas de arquivos ou mecanismos de identidade de produção.

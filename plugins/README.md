@@ -2,6 +2,12 @@
 
 Esta pasta é reservada para módulos futuros fornecidos pelo desenvolvedor. Nenhum plugin é instalado ou carregado da internet.
 
+## Limite de confiança
+
+Plugins são módulos Node.js carregados com `require()` durante a inicialização. Eles executam com as mesmas permissões do processo do BSCP//Forge e **não são uma sandbox**. Adicione somente arquivos locais revisados, nunca aceite upload de plugins e não implemente instalação por URL, pacote remoto ou registro externo.
+
+Um handler de plugin deve preservar o escopo do projeto: responder apenas a rotas locais, usar dados fictícios e manter arquivos, processos, rede e serviços externos como simulações fechadas em memória.
+
 Um plugin deve registrar um manifesto local com:
 
 - `id` único;

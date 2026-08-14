@@ -5,8 +5,10 @@ const { createLabSimulator, PATH_SOLUTIONS, COMMAND_SOLUTIONS, BUSINESS_LOGIC_SO
 const { MODULES, publicModules, findQuestion } = require('./lib/course-curriculum');
 const { createPluginRegistry } = require('./lib/plugin-registry');
 const { renderMiniSite } = require('./lib/mini-site');
+const { readJsonBody, resolvePublicFile } = require('./lib/http-utils');
+const { parsePort } = require('./lib/runtime-config');
 
-const PORT = Number(process.env.PORT || 3000);
+const PORT = parsePort(process.env.PORT);
 const ROOT = __dirname;
 const PUBLIC = path.join(ROOT, 'public');
 const PLUGIN_DIR = path.join(ROOT, 'plugins');
@@ -974,38 +976,11 @@ function sendHtml(req, res, status, body) {
   res.end(req.method === 'HEAD' ? undefined : body);
 }
 
-function readJsonBody(req, limit = 64 * 1024) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    let size = 0;
-    req.on('data', chunk => {
-      size += chunk.length;
-      if (size <= limit) chunks.push(chunk);
-    });
-    req.on('end', () => {
-      if (size > limit) {
-        const error = new Error('Corpo da requisição excede 64 KB');
-        error.statusCode = 413;
-        return reject(error);
-      }
-      try { return resolve(chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}); }
-      catch {
-        const error = new Error('Corpo JSON inválido');
-        error.statusCode = 400;
-        return reject(error);
-      }
-    });
-    req.on('error', reject);
-  });
-}
-
 const simulator = createLabSimulator({ markSolved, recordAttempt, send });
 
 function serveFile(req, res, pathname) {
-  const target = pathname === '/' ? '/index.html' : pathname;
-  const relative = path.normalize(target).replace(/^([/\\]*\.\.[/\\])+/, '').replace(/^[/\\]+/, '');
-  const full = path.resolve(PUBLIC, relative);
-  if (!full.startsWith(`${path.resolve(PUBLIC)}${path.sep}`) || !fs.existsSync(full) || fs.statSync(full).isDirectory()) return false;
+  const full = resolvePublicFile(PUBLIC, pathname);
+  if (!full) return false;
   const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.svg': 'image/svg+xml' };
   res.writeHead(200, {
     'Content-Type': types[path.extname(full)] || 'application/octet-stream',
