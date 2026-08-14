@@ -5,7 +5,8 @@
   "description": "Trilha local e interativa de preparação para BSCP",
   "scripts": {
     "start": "node server.js",
-    "test": "node tests/smoke.js"
+    "test": "node tests/smoke.js",
+    "check": "for file in server.js lib/*.js public/*.js tests/*.js; do node --check \"$file\" || exit 1; done"
   },
   "engines": {
     "node": ">=18"

@@ -5,8 +5,11 @@ const { createLabSimulator, PATH_SOLUTIONS, COMMAND_SOLUTIONS, BUSINESS_LOGIC_SO
 const { MODULES, publicModules, findQuestion } = require('./lib/course-curriculum');
 const { createPluginRegistry } = require('./lib/plugin-registry');
 const { renderMiniSite } = require('./lib/mini-site');
+const { readJsonBody, resolvePublicFile } = require('./lib/http-utils');
+const { parsePort } = require('./lib/runtime-config');
+const { EXTENDED_MODULES, EXTENDED_TRACKS, EXTENDED_LABS, publicExtendedModules } = require('./lib/extended-curriculum');
 
-const PORT = Number(process.env.PORT || 3000);
+const PORT = parsePort(process.env.PORT);
 const ROOT = __dirname;
 const PUBLIC = path.join(ROOT, 'public');
 const PLUGIN_DIR = path.join(ROOT, 'plugins');
@@ -884,15 +887,16 @@ const pluginModules = pluginEntries.map(plugin => plugin.module);
 const pluginTracks = pluginEntries.flatMap(plugin => plugin.tracks);
 const pluginLabs = pluginEntries.flatMap(plugin => plugin.labs);
 const pluginPublic = pluginRegistry.publicSnapshot();
-const allModules = [...MODULES, ...pluginModules];
-const allTracks = [...tracks, ...pluginTracks];
-const allLabs = [...labs, ...pluginLabs];
-const allPublicLabs = [...publicLabs, ...pluginPublic.flatMap(plugin => plugin.labs)];
+const publicExtendedLabs = EXTENDED_LABS.map(({ solutionPayload, solution, hints, ...lab }) => ({ ...lab, hintCount: hints.length }));
+const allModules = [...MODULES, ...EXTENDED_MODULES, ...pluginModules];
+const allTracks = [...tracks, ...EXTENDED_TRACKS, ...pluginTracks];
+const allLabs = [...labs, ...EXTENDED_LABS, ...pluginLabs];
+const allPublicLabs = [...publicLabs, ...publicExtendedLabs, ...pluginPublic.flatMap(plugin => plugin.labs)];
 
 function findAnyQuestion(questionId) {
   const core = findQuestion(questionId);
   if (core) return core;
-  for (const module of pluginModules) {
+  for (const module of [...EXTENDED_MODULES, ...pluginModules]) {
     const question = Array.isArray(module.quiz) ? module.quiz.find(item => item.id === questionId) : null;
     if (question) return { module, question };
   }
@@ -974,38 +978,30 @@ function sendHtml(req, res, status, body) {
   res.end(req.method === 'HEAD' ? undefined : body);
 }
 
-function readJsonBody(req, limit = 64 * 1024) {
-  return new Promise((resolve, reject) => {
-    const chunks = [];
-    let size = 0;
-    req.on('data', chunk => {
-      size += chunk.length;
-      if (size <= limit) chunks.push(chunk);
-    });
-    req.on('end', () => {
-      if (size > limit) {
-        const error = new Error('Corpo da requisição excede 64 KB');
-        error.statusCode = 413;
-        return reject(error);
-      }
-      try { return resolve(chunks.length ? JSON.parse(Buffer.concat(chunks).toString('utf8')) : {}); }
-      catch {
-        const error = new Error('Corpo JSON inválido');
-        error.statusCode = 400;
-        return reject(error);
-      }
-    });
-    req.on('error', reject);
-  });
+const simulator = createLabSimulator({ markSolved, recordAttempt, send });
+const academyBaselines = new Set();
+
+async function handleAcademyLab(req, res, url) {
+  const match = url.pathname.match(/^\/academy\/([a-z0-9-]+)\/([a-z0-9-]+)\/(\d+)$/);
+  if (!match) return send(res, 404, { error: 'Lab de academia não encontrado' });
+  const lab = EXTENDED_LABS.find(item => item.module === match[1] && item.track === match[2] && item.level === Number(match[3]));
+  if (!lab) return send(res, 404, { error: 'Lab de academia não encontrado' });
+  const baselineKey = `${lab.id}:${req.socket.remoteAddress || 'local'}`;
+  if (req.method === 'GET' && url.searchParams.get('variant') === 'baseline') {
+    academyBaselines.add(baselineKey);
+    return send(res, 200, { lab_signal: 'BASELINE_RECORDED', lab_id: lab.id, evidence_id: lab.solutionPayload.evidenceId, variant: 'baseline', decision: 'safe-path', safety: { external_requests: false, real_data: false, code_execution: false } }, { 'Cache-Control': 'no-store', 'X-Academy-Lab': 'baseline' });
+  }
+  if (req.method !== 'POST') return send(res, 405, { error: 'Use GET para baseline e POST para testar a variante.' }, { Allow: 'GET, POST' });
+  const input = await readJsonBody(req);
+  const passed = academyBaselines.has(baselineKey) && input.variant === lab.solutionPayload.variant && input.evidenceId === lab.solutionPayload.evidenceId;
+  recordAttempt(lab.id, passed);
+  if (passed) markSolved(lab.id);
+  return send(res, 200, { lab_signal: passed ? 'TRIGGERED' : 'NOT_TRIGGERED', lab_id: lab.id, baseline_observed: academyBaselines.has(baselineKey), evidence_id: String(input.evidenceId || ''), variant: String(input.variant || ''), decision: passed ? 'inconsistent-policy-observed' : 'safe-path', observed_effect: passed ? lab.impact : null, mitigation: passed ? lab.mitigation : undefined, safety: { external_requests: false, real_data: false, code_execution: false } }, { 'Cache-Control': 'no-store', 'X-Academy-Lab': passed ? 'triggered' : 'observed' });
 }
 
-const simulator = createLabSimulator({ markSolved, recordAttempt, send });
-
 function serveFile(req, res, pathname) {
-  const target = pathname === '/' ? '/index.html' : pathname;
-  const relative = path.normalize(target).replace(/^([/\\]*\.\.[/\\])+/, '').replace(/^[/\\]+/, '');
-  const full = path.resolve(PUBLIC, relative);
-  if (!full.startsWith(`${path.resolve(PUBLIC)}${path.sep}`) || !fs.existsSync(full) || fs.statSync(full).isDirectory()) return false;
+  const full = resolvePublicFile(PUBLIC, pathname);
+  if (!full) return false;
   const types = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'application/javascript; charset=utf-8', '.svg': 'image/svg+xml' };
   res.writeHead(200, {
     'Content-Type': types[path.extname(full)] || 'application/octet-stream',
@@ -1229,9 +1225,9 @@ function handleMiniSite(req, res, url) {
   if (!['GET', 'HEAD'].includes(req.method || 'GET')) return send(res, 405, { error: 'Método não permitido no mini site' }, { Allow: 'GET, HEAD' });
   const match = url.pathname.match(/^\/site\/([a-z0-9-]+)\/?$/);
   if (!match) return send(res, 404, { error: 'Mini site não encontrado' });
-  const lab = labs.find(item => item.id === match[1]);
+  const lab = allLabs.find(item => item.id === match[1]);
   if (!lab) return send(res, 404, { error: 'Mini site não encontrado' });
-  const track = tracks.find(item => item.id === lab.track);
+  const track = allTracks.find(item => item.id === lab.track);
   return sendHtml(req, res, 200, renderMiniSite(lab, track));
 }
 
@@ -1241,9 +1237,9 @@ async function handler(req, res) {
     try { url = new URL(req.url, `http://${req.headers.host || 'localhost'}`); }
     catch { return send(res, 400, { error: 'URL inválida' }); }
     if (url.pathname === '/api/health') return send(res, 200, { ok: true, service: 'bscp-forge', labs: allLabs.length, plugins: pluginRegistry.ids().length });
-    if (url.pathname === '/api/course') return send(res, 200, { modules: [...publicModules(), ...pluginPublic.map(plugin => plugin.module)], tracks: allTracks, labs: allPublicLabs, plugins: pluginRegistry.ids(), stats: { modules: allModules.length, tracks: allTracks.length, labs: allLabs.length, labPoints: allLabs.reduce((sum, lab) => sum + Number(lab.points || 0), 0), challengePoints: allModules.reduce((sum, module) => sum + Number(module.finalChallenge?.bonus || 0), 0) } });
+    if (url.pathname === '/api/course') return send(res, 200, { modules: [...publicModules(), ...publicExtendedModules(), ...pluginPublic.map(plugin => plugin.module)], tracks: allTracks, labs: allPublicLabs, plugins: pluginRegistry.ids(), stats: { modules: allModules.length, tracks: allTracks.length, labs: allLabs.length, labPoints: allLabs.reduce((sum, lab) => sum + Number(lab.points || 0), 0), challengePoints: allModules.reduce((sum, module) => sum + Number(module.finalChallenge?.bonus || 0), 0) } });
     if (url.pathname === '/api/content/original') {
-      const contentFiles = { 'web-cache': path.join('burp', 'burpwebcache.txt'), 'web-llm': path.join('burp', 'burpLLM.txt'), 'web-auth': 'Auth.txt', 'path-traversal': path.join('burp', 'PathTraversal.txt'), 'os-command-injection': path.join('burp', 'CommandInjection.txt'), 'business-logic': path.join('burp', 'regadenogocio.txt'), 'api-testing': path.join('burp', 'testedeapi.txt'), 'information-disclosure': path.join('burp', 'vulnerabilidadesdedivulgaçãodeinformações.txt'), 'access-control': path.join('burp', 'Access controlvulnerabilitiesandprivilegeescalation.txt'), 'file-upload': path.join('burp', 'Vulnerabilidadesnouploaddearquivos.txt'), 'nosql-injection': path.join('burp', 'injeçãoNoSQL.txt') };
+      const contentFiles = { 'web-cache': path.join('burp', 'burpwebcache.txt'), 'web-llm': path.join('burp', 'burpLLM.txt'), 'web-auth': 'Auth.txt', 'path-traversal': path.join('burp', 'PathTraversal.txt'), 'os-command-injection': path.join('burp', 'CommandInjection.txt'), 'business-logic': path.join('burp', 'regadenogocio.txt'), 'api-testing': path.join('burp', 'testedeapi.txt'), 'information-disclosure': path.join('burp', 'vulnerabilidadesdedivulgaçãodeinformações.txt'), 'access-control': path.join('burp', 'Access controlvulnerabilitiesandprivilegeescalation.txt'), 'file-upload': path.join('burp', 'Vulnerabilidadesnouploaddearquivos.txt'), 'nosql-injection': path.join('burp', 'injeçãoNoSQL.txt'), ...Object.fromEntries(EXTENDED_MODULES.map(module => [module.id, 'PORTSWIGGER_MATERIALS.md'])) };
       const requestedModule = url.searchParams.get('module');
       if (requestedModule && !contentFiles[requestedModule]) return send(res, 400, { error: 'Módulo de referência inválido' });
       const filename = contentFiles[requestedModule] || contentFiles['web-cache'];
@@ -1307,7 +1303,7 @@ async function handler(req, res) {
       return send(res, 200, { completed: true, module: module.id, bonus: module.finalChallenge.bonus, ...progressPayload() }, { 'Cache-Control': 'no-store' });
     }
     if (url.pathname === '/api/cache/reset' && req.method === 'POST') { cache.clear(); cacheObservations.clear(); return send(res, 200, { ok: true, cacheEntries: 0 }); }
-    if (url.pathname === '/api/labs/reset' && req.method === 'POST') { cache.clear(); cacheObservations.clear(); simulator.reset(); return send(res, 200, { ok: true, message: 'Estado efêmero dos laboratórios reiniciado.' }); }
+    if (url.pathname === '/api/labs/reset' && req.method === 'POST') { cache.clear(); cacheObservations.clear(); academyBaselines.clear(); simulator.reset(); return send(res, 200, { ok: true, message: 'Estado efêmero dos laboratórios reiniciado.' }); }
     if (url.pathname === '/api/progress/reset' && req.method === 'POST') {
       solved.clear(); progressState.attempts = {}; progressState.hintUnlocks = {}; progressState.quizHistory = []; progressState.finalChallenges.clear(); persistProgress();
       return send(res, 200, { ok: true, ...progressPayload() });
@@ -1324,6 +1320,7 @@ async function handler(req, res) {
     if (url.pathname.startsWith('/access/')) return await handleAccessControlLab(req, res, url);
     if (url.pathname.startsWith('/upload/')) return await handleFileUploadLab(req, res, url);
     if (url.pathname.startsWith('/nosql/')) return await handleNoSqlLab(req, res, url);
+    if (url.pathname.startsWith('/academy/')) return await handleAcademyLab(req, res, url);
     const pluginRoute = await pluginRegistry.route(req, res, url);
     if (pluginRoute.handled) return pluginRoute.result;
     if (['GET', 'HEAD'].includes(req.method || 'GET') && serveFile(req, res, url.pathname)) return;

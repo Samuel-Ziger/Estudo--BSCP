@@ -5,6 +5,9 @@ const http = require('http');
 const os = require('os');
 const path = require('path');
 const { createPluginRegistry } = require('../lib/plugin-registry');
+const { resolvePublicFile } = require('../lib/http-utils');
+const { parsePort } = require('../lib/runtime-config');
+const { EXTENDED_LABS } = require('../lib/extended-curriculum');
 
 const testData = fs.mkdtempSync(path.join(os.tmpdir(), 'bscp-forge-test-'));
 process.env.BSCPFORGE_DATA_DIR = testData;
@@ -99,6 +102,12 @@ function expectedRememberToken(level, username, password) {
 }
 
 async function assertCatalogAndAssets() {
+  assert.equal(parsePort(undefined), 3000);
+  assert.equal(parsePort('3001'), 3001);
+  for (const invalid of ['0', '65536', '3.5', 'not-a-port']) assert.throws(() => parsePort(invalid), /PORT deve ser/);
+  assert.equal(resolvePublicFile(path.join(__dirname, '..', 'public'), '/index.html'), path.join(__dirname, '..', 'public', 'index.html'));
+  assert.equal(resolvePublicFile(path.join(__dirname, '..', 'public'), '/../server.js'), null);
+
   const registry = createPluginRegistry(['web-cache']);
   registry.register({
     id: 'future-local',
@@ -113,10 +122,10 @@ async function assertCatalogAndAssets() {
 
   const courseResult = await request('/api/course');
   assert.equal(courseResult.response.status, 200);
-  assert.equal(courseResult.body.tracks.length, 57);
-  assert.equal(courseResult.body.labs.length, 285);
-  assert.deepEqual(courseResult.body.stats, { modules: 11, tracks: 57, labs: 285, labPoints: 85500, challengePoints: 11000 });
-  assert.equal(courseResult.body.modules.length, 11);
+  assert.equal(courseResult.body.tracks.length, 77);
+  assert.equal(courseResult.body.labs.length, 385);
+  assert.deepEqual(courseResult.body.stats, { modules: 31, tracks: 77, labs: 385, labPoints: 115500, challengePoints: 31000 });
+  assert.equal(courseResult.body.modules.length, 31);
   for (const module of courseResult.body.modules) {
     assert.ok(module.glossary.length >= 5, `${module.id}: glossário incompleto`);
     assert.ok(module.checklist.length >= 5, `${module.id}: checklist incompleto`);
@@ -128,6 +137,12 @@ async function assertCatalogAndAssets() {
     Object.fromEntries(['web-cache', 'web-llm', 'web-auth', 'path-traversal', 'os-command-injection', 'business-logic', 'api-testing', 'information-disclosure', 'access-control', 'file-upload', 'nosql-injection'].map(module => [module, courseResult.body.labs.filter(lab => lab.module === module).length])),
     { 'web-cache': 40, 'web-llm': 20, 'web-auth': 25, 'path-traversal': 25, 'os-command-injection': 25, 'business-logic': 25, 'api-testing': 25, 'information-disclosure': 25, 'access-control': 25, 'file-upload': 25, 'nosql-injection': 25 }
   );
+  for (const module of courseResult.body.modules.slice(11)) {
+    assert.equal(courseResult.body.labs.filter(lab => lab.module === module.id).length, 5, `${module.id}: deveria possuir cinco labs`);
+    const source = await request(`/api/content/original?module=${module.id}`);
+    assert.equal(source.response.status, 200);
+    assert.match(source.body.text, /Materiais PortSwigger incorporados/);
+  }
 
   for (const lab of courseResult.body.labs) {
     assert.equal(lab.studyFlow.length, 5, `${lab.id}: roteiro incompleto`);
@@ -237,13 +252,13 @@ async function assertMiniSites(course) {
     assert.match(site.response.headers.get('content-security-policy'), /form-action 'self'/);
     assert.match(site.text, new RegExp(`data-lab-id="${lab.id}"`));
     assert.match(site.text, new RegExp(`data-module="${lab.module}"`));
-    assert.ok(site.text.includes(formByModule[lab.module]), `${lab.id}: aplicação do módulo ausente`);
+    assert.ok(site.text.includes(formByModule[lab.module] || 'id="academy-form"'), `${lab.id}: aplicação do módulo ausente`);
     assert.match(site.text, /\/lab-site\.js/);
     assert.match(site.text, /\/lab-site\.css/);
     assert.doesNotMatch(site.text, /(?:src|href)="https?:\/\//i, `${lab.id}: mini site não deve carregar recurso externo`);
     assert.doesNotMatch(site.text, /BSCP-[A-Z-]+-\d+-SECRET/, `${lab.id}: solução vazou no HTML`);
   }
-  assert.equal(seen.size, 285);
+  assert.equal(seen.size, 385);
 
   const head = await request(course.labs[0].sitePath, { method: 'HEAD' });
   assert.equal(head.response.status, 200);
@@ -787,6 +802,22 @@ async function solveNoSqlLabs() {
   }
 }
 
+async function solveExtendedLabs() {
+  for (const lab of EXTENDED_LABS) {
+    const baseline = await request(`${lab.payload}?variant=baseline`);
+    assert.equal(baseline.body.lab_signal, 'BASELINE_RECORDED', `${lab.id}: baseline ausente`);
+    assert.equal(baseline.body.safety.external_requests, false);
+    const wrong = await post(lab.payload, { variant: lab.solutionPayload.variant, evidenceId: 'evidence-incorreta' });
+    assert.notEqual(wrong.body.lab_signal, 'TRIGGERED', `${lab.id}: evidência incorreta não deveria concluir`);
+    const result = await post(lab.payload, lab.solutionPayload);
+    assertTriggered(result, lab.id);
+    assert.equal(result.body.safety.external_requests, false);
+    assert.equal(result.body.safety.real_data, false);
+    assert.equal(result.body.safety.code_execution, false);
+    assert.equal(result.response.headers.get('x-academy-lab'), 'triggered');
+  }
+}
+
 async function assertRobustnessAndPersistence() {
   const invalidJson = await request('/llm/chat/llm-api-agency/1', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"action":'
@@ -833,10 +864,10 @@ async function assertRobustnessAndPersistence() {
   assert.match(index.response.headers.get('content-security-policy'), /connect-src 'self'/);
 
   const progress = await request('/api/progress');
-  assert.equal(progress.body.solved.length, 285, 'todos os 285 labs deveriam estar concluídos');
-  assert.equal(new Set(progress.body.solved).size, 285, 'não deveria haver IDs duplicados');
-  assert.equal(progress.body.earnedPoints, 85500);
-  assert.equal(progress.body.availablePoints, 96500);
+  assert.equal(progress.body.solved.length, 385, 'todos os 385 labs deveriam estar concluídos');
+  assert.equal(new Set(progress.body.solved).size, 385, 'não deveria haver IDs duplicados');
+  assert.equal(progress.body.earnedPoints, 115500);
+  assert.equal(progress.body.availablePoints, 146500);
 
   const solvedResult = await request('/api/labs/result?lab=path-basic-1');
   assert.equal(solvedResult.response.status, 200);
@@ -851,32 +882,32 @@ async function assertRobustnessAndPersistence() {
   const examAnswers = course.modules.map(module => ({ questionId: module.quiz[0].id, answer: 0 }));
   const exam = await post('/api/exam/submit', { answers: examAnswers });
   assert.equal(exam.response.status, 200);
-  assert.equal(exam.body.total, 11);
+  assert.equal(exam.body.total, 31);
 
   for (const module of course.modules) {
     const final = await post('/api/final-challenge/submit', { module: module.id });
     assert.equal(final.body.completed, true, `${module.id}: desafio final deveria ser concluído`);
   }
   const completeProgress = await request('/api/progress');
-  assert.equal(completeProgress.body.finalChallenges.length, 11);
-  assert.equal(completeProgress.body.earnedPoints, 96500);
+  assert.equal(completeProgress.body.finalChallenges.length, 31);
+  assert.equal(completeProgress.body.earnedPoints, 146500);
   const persisted = JSON.parse(fs.readFileSync(path.join(testData, 'progress.json'), 'utf8'));
   assert.equal(persisted.version, 3);
-  assert.equal(persisted.solved.length, 285);
-  assert.equal(persisted.finalChallenges.length, 11);
+  assert.equal(persisted.solved.length, 385);
+  assert.equal(persisted.finalChallenges.length, 31);
 
   await stopServer();
   delete require.cache[serverModulePath];
   application = require(serverModulePath);
   await startServer();
   const restored = await request('/api/progress');
-  assert.equal(restored.body.solved.length, 285, 'o progresso deveria sobreviver ao reinício do servidor');
-  assert.equal(restored.body.finalChallenges.length, 11, 'os desafios finais deveriam sobreviver ao reinício');
+  assert.equal(restored.body.solved.length, 385, 'o progresso deveria sobreviver ao reinício do servidor');
+  assert.equal(restored.body.finalChallenges.length, 31, 'os desafios finais deveriam sobreviver ao reinício');
 
   const labsReset = await request('/api/labs/reset', { method: 'POST' });
   assert.equal(labsReset.body.ok, true);
   const stillSolved = await request('/api/progress');
-  assert.equal(stillSolved.body.solved.length, 285, 'reiniciar estado efêmero não deveria apagar progresso');
+  assert.equal(stillSolved.body.solved.length, 385, 'reiniciar estado efêmero não deveria apagar progresso');
 
   const reset = await request('/api/progress/reset', { method: 'POST' });
   assert.deepEqual(reset.body.solved, []);
@@ -903,8 +934,9 @@ async function run() {
   await solveAccessControlLabs();
   await solveFileUploadLabs();
   await solveNoSqlLabs();
+  await solveExtendedLabs();
   await assertRobustnessAndPersistence();
-  console.log('Validação concluída: 285 mini sites abertos e 285 labs resolvidos por comportamento, incluindo 25 labs de NoSQL com coleções, predicados e tempo somente virtuais.');
+  console.log('Validação concluída: 385 mini sites abertos e 385 labs resolvidos por comportamento, incluindo 100 labs adicionais baseados no inventário PortSwigger.');
 }
 
 run().catch(error => {
