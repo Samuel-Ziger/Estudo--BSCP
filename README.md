@@ -1,6 +1,6 @@
 # BSCP//Forge — Training System
 
-Plataforma local e modular para estudar Web Cache Deception, ataques de Web LLM, vulnerabilidades de autenticação, Path Traversal, OS Command Injection, vulnerabilidades na Lógica de Negócios, Teste de API, Divulgação de Informações, Controle de Acesso, Upload de Arquivos e Injeção NoSQL com o Burp Suite. O catálogo atual possui 57 trilhas e 285 mini labs progressivos. Cada lab abre um mini site navegável próprio e é validado por comportamento observável.
+Plataforma local e modular para estudar segurança web com o Burp Suite. O catálogo atual possui 31 módulos, 77 trilhas e 385 mini labs progressivos. Cada lab abre um mini site navegável próprio e é validado por comportamento observável.
 
 ## Executar
 
@@ -29,12 +29,13 @@ Cada item do catálogo possui uma URL estável no formato `/site/<lab-id>`. O mi
 - **Controle de Acesso — 25 labs:** escalonamento vertical e horizontal, discrepâncias de rota e método, IDOR e controles contextuais sobre identidades, funções e objetos exclusivamente fictícios.
 - **Upload de Arquivos — 25 labs:** interpretação virtual, confiança em MIME, caminhos de destino, extensões, conteúdo composto, métodos alternativos, objetos temporários e quota sobre um cofre totalmente em memória.
 - **Injeção NoSQL — 25 labs:** sintaxe e Booleanos, operadores em autenticação, inferência de campos e prefixos e canal temporal declarado sobre coleções documentais fechadas em memória.
+- **20 temas adicionais — 100 labs:** Race Conditions, GraphQL, Prototype Pollution, habilidades essenciais, SQL Injection, XSS, CSRF, XXE, Clickjacking, CORS, SSRF, Request Smuggling, SSTI, desserialização, OAuth, WebSockets, DOM, Cache Poisoning, Host Header e JWT, todos com cinco níveis sobre um motor declarativo fechado.
 
 Cada lab informa cenário, atores fictícios, objetivo, requisição inicial, condição de sucesso, protocolo, evidência, impacto, reflexão, mitigação e anotações próprias. As dicas são liberadas uma por vez. Depois da conclusão, a API libera a explicação, a sequência HTTP correta, a interpretação dos componentes e um relatório exportável. Os níveis CTF não expõem dicas nem o payload interno usado pelos testes.
 
 ## Recursos de aprendizagem
 
-Os onze módulos atuais possuem:
+Os 31 módulos atuais possuem:
 
 - glossário e checklist interativo;
 - quiz por seção com validação no servidor;
@@ -97,12 +98,12 @@ npm test
 
 A suíte integrada:
 
-- resolve os 285 labs pelos fluxos comportamentais completos;
+- resolve os 385 labs pelos fluxos comportamentais completos;
 - confirma que palavras como `admin`, `sql` e `xss` não geram falsos positivos;
 - rejeita técnica errada, alvo incorreto, uma única chave quando duas são exigidas, operações vazias e estado armado em outro IP;
 - verifica MFA, rate limit, lockout, arrays, cinco formatos de cookie e tokens de uso único;
 - valida os 25 caminhos canônicos e os 40 fluxos `MISS → HIT`;
-- abre os 285 mini sites e verifica formulário do módulo, CSP de mesma origem, ausência de recursos externos e proteção contra vazamento de solução;
+- abre os 385 mini sites e verifica formulário do módulo, CSP de mesma origem, ausência de recursos externos e proteção contra vazamento de solução;
 - valida métodos HTTP, tipos de conteúdo, parâmetros ocultos, sequências `PATCH → GET` e requisições internas virtuais nos 25 labs de Teste de API;
 - valida artefatos, respostas diferenciais, TRACE virtual, dados de conta e sequências de histórico nos 25 labs de Divulgação de Informações;
 - valida identidade, propriedade, normalização de rotas, métodos e transições de estado nos 25 labs de Controle de Acesso;
@@ -114,10 +115,10 @@ A suíte integrada:
 
 - `server.js` — catálogo, API, cache, arquivos estáticos e persistência do progresso.
 - `lib/lab-simulator.js` — motores stateful de LLM, autenticação, Path Traversal, OS Command Injection, Lógica de Negócios, Teste de API, Divulgação de Informações, Controle de Acesso, Upload de Arquivos e Injeção NoSQL.
-- `lib/mini-site.js` — renderização orientada por dados dos 285 mini sites.
-- `lib/course-curriculum.js` — metadados, glossários, checklists, quizzes e desafios dos onze módulos.
+- `lib/mini-site.js` — renderização orientada por dados dos 385 mini sites.
+- `lib/course-curriculum.js` e `lib/extended-curriculum.js` — metadados, glossários, checklists, quizzes e desafios dos 31 módulos.
 - `lib/plugin-registry.js` e `plugins/` — registro local para módulos futuros, sem instalação ou rede externa.
-- `tests/smoke.js` — suíte comportamental integrada dos 285 labs.
+- `tests/smoke.js` — suíte comportamental integrada dos 385 labs.
 - `public/index.html`, `public/app.js` e folhas de estilo — interface responsiva e acessível da academia.
 - `public/lab-site.js` e `public/lab-site.css` — interações e apresentação das aplicações de laboratório.
 - `public/*-lessons.js` — aulas especializadas e protocolos de cada engine.
@@ -127,8 +128,10 @@ A suíte integrada:
 
 Para adicionar um módulo, registre trilhas e receitas no catálogo, implemente o comportamento no simulador correspondente e mantenha a interface consumindo `/api/course`. Uma nova trilha deve incluir cinco níveis e testes positivos e negativos.
 
+Plugins em `plugins/` são código Node.js local confiável, carregado sem sandbox. Revise cada arquivo antes de adicioná-lo e nunca instale plugins recebidos por upload ou por origem remota.
+
 ## Limitações e próximos passos
 
 Os simuladores abstraem componentes reais para tornar cada conceito observável. Eles não reproduzem todas as particularidades de frameworks, CDNs, modelos, sistemas de arquivos ou mecanismos de identidade de produção.
 
-A expansão geral da Fase 3 permanece deliberadamente adiada. OS Command Injection, Lógica de Negócios, Teste de API, Divulgação de Informações, Controle de Acesso, Upload de Arquivos e Injeção NoSQL foram incluídos depois que seus conteúdos reais foram fornecidos na pasta `burp`. A trilha de Command Injection termina com o [vídeo complementar indicado](https://youtu.be/8PDDjCW5XWw?si=rTLzLNDQLrlCC0-r), carregado somente quando o estudante decide abrir o link. SQL Injection, XSS, SSRF, OAuth, HTTP Request Smuggling e Web Cache Poisoning somente serão implementados quando os respectivos conteúdos reais de referência forem fornecidos pelo estudante.
+O inventário fornecido pelo desenvolvedor está preservado em `PORTSWIGGER_MATERIALS.md`. Os 20 novos temas usam um motor declarativo comum para garantir execução local e cinco níveis por tema; aprofundamentos futuros podem substituir cada receita declarativa por um motor especializado sem mudar o contrato público.

@@ -4,7 +4,7 @@
 
 O BSCP//Forge é uma plataforma local, interativa e modular para preparar o estudo da certificação BSCP. O sistema transforma conteúdos teóricos de segurança web em uma trilha prática, com explicações progressivas, exemplos de requisições HTTP e mini laboratórios resolvidos com o Burp Suite.
 
-A versão atual contém **Web Cache Deception**, **Ataques de Web LLM**, **Vulnerabilidades de Autenticação**, **Path Traversal**, **OS Command Injection**, **Vulnerabilidades na Lógica de Negócios**, **Teste de API**, **Vulnerabilidades de Divulgação de Informações**, **Vulnerabilidades de Controle de Acesso e Escalonamento de Privilégios**, **Vulnerabilidades no Upload de Arquivos** e **Injeção NoSQL**. São 57 trilhas e 285 laboratórios comportamentais. Outros módulos, como SQL Injection, XSS, SSRF, OAuth e HTTP Request Smuggling, poderão ser adicionados sem reescrever a plataforma.
+A versão atual contém 31 módulos, 77 trilhas e 385 laboratórios comportamentais. Além dos onze motores especializados, o inventário fornecido pelo desenvolvedor acrescenta 20 temas com cinco níveis declarativos cada, preservando o mesmo contrato pedagógico e o isolamento local.
 
 ## Module 04 — Path Traversal
 
@@ -203,7 +203,7 @@ Nos labs de exploração, o estudante deve:
 - `/api/content/original` entrega apenas os onze materiais locais permitidos.
 - `/api/labs/hints` libera dicas progressivamente; `/api/labs/result` entrega a solução somente depois da conclusão.
 - `/api/quiz/answer`, `/api/exam/submit` e `/api/final-challenge/submit` validam os recursos de aprendizagem.
-- `/site/<lab-id>` abre a aplicação navegável correspondente a cada um dos 285 labs.
+- `/site/<lab-id>` abre a aplicação navegável correspondente a cada um dos 385 labs.
 - `/lab`, `/llm`, `/auth`, `/path`, `/cmd`, `/logic`, `/api-lab`, `/info`, `/access`, `/upload` e `/nosql` expõem os onze motores de treinamento.
 
 A matriz completa de conceito, comportamento, evidência e defesa está em `MATRIZ_DOS_LABS.md`.
@@ -258,14 +258,12 @@ Cada lab deve ser descrito por dados, e não espalhado pela interface. Assim ser
 
 ### Fase 3 — Expansão BSCP
 
-**Parcialmente adiada por decisão do desenvolvedor.** OS Command Injection, Lógica de Negócios, Teste de API, Divulgação de Informações, Controle de Acesso, Upload de Arquivos e Injeção NoSQL foram implementados após o fornecimento dos respectivos materiais na pasta `burp`. Os módulos abaixo somente serão iniciados quando o conteúdo real de referência correspondente for fornecido.
+**Concluída no escopo declarativo.** Os 20 temas adicionais fornecidos pelo desenvolvedor foram incorporados com cinco labs progressivos cada. Motores especializados poderão aprofundar cada tema sem alterar as URLs ou o contrato público.
 
-- SQL Injection.
-- XSS.
-- SSRF.
-- OAuth.
-- HTTP Request Smuggling.
-- Web cache poisoning.
+- [x] Incorporar os 20 temas relacionados em `PORTSWIGGER_MATERIALS.md`.
+- [x] Criar cinco níveis por tema, totalizando 100 novos labs.
+- [x] Exigir baseline, comparação estruturada, evidência e mitigação.
+- [x] Manter rede, execução, arquivos e dados reais desativados.
 
 ### Fase 4 — Recursos avançados
 
@@ -303,6 +301,6 @@ O objetivo não é apenas encontrar uma flag. É fazer o estudante conseguir exp
 
 ## 13. Estado de validação
 
-A suíte integrada resolve os 285 labs por comportamento e cobre fluxos negativos, cookies e transições de MFA, rate limit vinculado ao IP, lockout, arrays, cookies persistentes, tokens de uso único, caminhos canônicos, comandos, transações, métodos HTTP, tipos de conteúdo, binding de objetos, respostas diferenciais, artefatos, requisições internas virtuais, identidade, propriedade, rotas, contexto, nomes de upload, MIME, extensões, processamento, objetos temporários, quota, predicados NoSQL declarativos, descoberta de campos, prefixos e tempo simulado, além de cache privado, múltiplas chaves, operações LLM inválidas, entradas malformadas, headers, persistência e reset. Também abre os 285 mini sites, valida o formulário de cada módulo, o isolamento de mesma origem e a proteção das soluções, além de dicas progressivas, quiz, simulado, desafios finais e o registro local de plugins. Os testes confirmam que processos, arquivos, parsers, execução, bancos, rede, dinheiro, serviços, contratos, contas, backups, segredos, histórico e decisões de autorização usados nos cenários permanecem falsos ou em memória. A interface é verificada em desktop e largura móvel, incluindo filtros, aulas, aprendizagem, métricas, conteúdo original, busca, caderno, modal, foco, aplicações e console.
+A suíte integrada resolve os 385 labs por comportamento, incluindo os 100 labs declarativos adicionais, e cobre fluxos positivos, negativos, isolamento, headers, persistência e reset. Também abre todos os mini sites, valida o formulário de cada módulo, o isolamento de mesma origem e a proteção das soluções.
 
 Os mini sites e simuladores continuam sendo abstrações didáticas locais. Cache, sessões, contadores e tokens efêmeros ficam em memória; somente o progresso é persistido. Eles não devem ser publicados nem usados como substitutos exatos de produtos reais.

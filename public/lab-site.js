@@ -131,6 +131,17 @@
     });
   }
 
+  function initAcademy() {
+    byId('academy-baseline').addEventListener('click', async () => {
+      const result = await sendRequest(`${lab.endpoint}?variant=baseline`);
+      if (result?.evidence_id) byId('academy-evidence').value = result.evidence_id;
+    });
+    byId('academy-form').addEventListener('submit', event => {
+      event.preventDefault();
+      sendRequest(lab.endpoint, jsonOptions({ variant: value('academy-variant'), evidenceId: value('academy-evidence') }));
+    });
+  }
+
   function llmPayload() {
     if (lab.track === 'llm-indirect') {
       const payload = { task: value('llm-task'), sourceId: value('llm-source-id') };
@@ -493,7 +504,8 @@
     catch { toast('Não foi possível acessar a área de transferência.'); }
   });
 
-  if (lab.module === 'web-cache') initCache();
+  if (lab.endpoint.startsWith('/academy/')) initAcademy();
+  else if (lab.module === 'web-cache') initCache();
   else if (lab.module === 'web-llm') initLlm();
   else if (lab.module === 'web-auth') initAuth();
   else if (lab.module === 'os-command-injection') initCommand();

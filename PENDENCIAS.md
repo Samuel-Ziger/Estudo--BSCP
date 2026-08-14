@@ -1,6 +1,6 @@
 # Pendências para concluir a melhoria geral
 
-Este documento acompanha o trabalho ainda necessário para manter os 285 exercícios como laboratórios locais consistentes, observáveis e didáticos. Ele deve ser atualizado conforme os itens forem concluídos.
+Este documento acompanha o trabalho necessário para manter os 385 exercícios como laboratórios locais consistentes, observáveis e didáticos. Ele deve ser atualizado conforme os itens forem concluídos.
 
 ## Situação atual
 
@@ -116,8 +116,9 @@ Este documento acompanha o trabalho ainda necessário para manter os 285 exercí
 - [x] Criar Injeção NoSQL com cinco trilhas, 25 mini sites, glossário, quiz, checklist e desafio final.
 - [x] Simular sintaxe, Booleanos, operadores, autenticação, inferência e tempo apenas com coleções e predicados declarativos em memória.
 - [x] Adicionar regressões para consulta normal, condição verdadeira isolada, operador com credencial divergente e atraso sem condição.
-- [ ] Fase 3 adiada até o desenvolvedor fornecer os materiais reais correspondentes de SQL Injection, XSS, SSRF, OAuth, HTTP Request Smuggling e Web Cache Poisoning.
+- [x] Incorporar o inventário de materiais fornecido pelo desenvolvedor para Race Conditions, GraphQL, Prototype Pollution, habilidades essenciais, SQL Injection, XSS, CSRF, XXE, Clickjacking, CORS, SSRF, Request Smuggling, SSTI, desserialização, OAuth, WebSockets, DOM, Cache Poisoning, Host Header e JWT.
+- [x] Criar cinco mini labs progressivos para cada um dos 20 temas adicionais, com baseline obrigatório, variante estruturada, evidência observável e mitigação.
 
 ## Critério de conclusão
 
-O trabalho estará concluído quando os 285 labs tiverem mini sites navegáveis e forem resolvidos por testes comportamentais, os fluxos negativos não produzirem falsos positivos, a interface estiver validada em desktop e mobile, a documentação refletir o funcionamento real e não houver erro de sintaxe, teste, console ou formatação no diff.
+O trabalho estará concluído quando os 385 labs tiverem mini sites navegáveis e forem resolvidos por testes comportamentais, os fluxos negativos não produzirem falsos positivos, a interface estiver validada em desktop e mobile, a documentação refletir o funcionamento real e não houver erro de sintaxe, teste, console ou formatação no diff.

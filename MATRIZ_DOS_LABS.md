@@ -62,6 +62,33 @@ Cada trilha contém cinco labs — Aprendiz, Básico, Praticante, Avançado e CT
 | Injeção NoSQL | Extração por operadores | Predicados sobre chaves e prefixos | Operador virtual permite inferir forma e parte de documento fictício | Operador, índice ou prefixo e variante de resposta | Allowlist de campos e operadores; rejeição de estrutura desconhecida |
 | Injeção NoSQL | Detecção por tempo simulado | Canal lateral baseado em condição | Resposta declara atraso virtual somente quando a hipótese corresponde | Baselines, `simulated_delay_ms` e `real_delay_performed: false` | Evitar execução dinâmica, uniformizar comportamento e monitorar consultas |
 
+## Cobertura declarativa adicional
+
+Os 20 temas adicionais usam a mesma sequência comportamental: registrar baseline, enviar variante estruturada, correlacionar `evidence_id`, observar uma decisão divergente e registrar a mitigação. Cada linha representa uma trilha com cinco níveis.
+
+| Tema | Progressão observável | Defesa principal |
+| --- | --- | --- |
+| Race Conditions | baseline concorrente → confirmação sincronizada | atomicidade, locking e idempotência |
+| GraphQL | introspecção → autorização por resolver | schemas mínimos, limites e autorização por campo |
+| Prototype Pollution | chave herdada → validação de propriedades | objetos sem protótipo e allowlist de chaves |
+| Habilidades Essenciais | baseline → relatório reproduzível | método controlado e validação manual |
+| SQL Injection | Booleanos → consulta parametrizada | parâmetros tipados e menor privilégio |
+| XSS | reflexão → encoding contextual e CSP | encoding por contexto e sinks seguros |
+| CSRF | ação com cookie → token vinculado | token, origem e SameSite apropriado |
+| XXE | parser virtual → parser endurecido | desabilitar entidades externas |
+| Clickjacking | framing → `frame-ancestors` | CSP e confirmação de ações sensíveis |
+| CORS | origem refletida → allowlist exata | origens explícitas sem reflexão |
+| SSRF | URL controlada → allowlist e egress | resolução segura e segmentação de rede |
+| Request Smuggling | CL/TE → parsing uniforme | normalização ponta a ponta |
+| SSTI | contexto → template sem entrada dinâmica | separar dados de templates |
+| Desserialização | objeto → schema seguro | integridade, tipos permitidos e formatos simples |
+| OAuth | redirect URI → validação estrita | vínculo de state, sessão, issuer e redirect |
+| WebSockets | handshake → origem e sessão | autenticação e autorização por mensagem |
+| Vulnerabilidades DOM | fonte/sink → DOM seguro | APIs seguras e validação de origem |
+| Cache Poisoning | entrada não chaveada → política segura | chave completa e saída não refletida |
+| Host Header | host arbitrário → host canônico | allowlist e URLs configuradas |
+| JWT | estrutura → allowlist criptográfica | algoritmo fixo, chaves confiáveis e claims validados |
+
 ## Regras comuns de evidência
 
 1. Começar por uma requisição-base e mudar uma variável por vez.
